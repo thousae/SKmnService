@@ -1,11 +1,18 @@
 import re
+import pickle
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from PyKomoran import Komoran
-from util.statics import static_vars
 from alive_progress import alive_bar
-import pickle
+
+
+def static_vars(**kwargs):
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
 
 
 def get_url(start=1):
@@ -35,7 +42,7 @@ def is_hangul(text):
 def crawl_news_links(amount):
     news_links = []
     r = range(1, amount, 10)
-    with alive_bar(len(r)) as bar:
+    with alive_bar(amount) as bar:
         for i in r:
             soup = get_html_soup(get_url(i))
             a = soup.select('a._sp_each_url')
@@ -43,7 +50,8 @@ def crawl_news_links(amount):
                 link = elem['href']
                 if link.startswith('https://news.naver.com'):
                     news_links.append(link)
-            bar()
+            for _ in range(10):
+                bar()
     print('%d news found!' % len(news_links))
     return news_links
 
