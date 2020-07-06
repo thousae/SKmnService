@@ -96,7 +96,7 @@ def crawl(amount):
             bar()
 
     df = pd.DataFrame(data)
-    save_data(df, 'news.pickle')
+    save_data(df, 'crawling/news.pickle')
 
 
 if __name__ == '__main__':
