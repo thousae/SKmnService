@@ -3,7 +3,7 @@
 # %%
 """
 Required Libraries: [
-    "numpy(1.18.1)",
+
     "tensorflow(2.1.0)",
     "pandas(1.0.3)",
     "scikit-learn(0.22.2)",
@@ -14,8 +14,9 @@ Required Libraries: [
 ]
 """
 
-
 # %%
+# Constants
+
 SOT = 'sot'
 EOT = 'eot'
 PAD = 0
@@ -29,13 +30,9 @@ dropout = 0.4
 epochs = 50
 batch_size = 1
 
-
 # %%
-import numpy as np
-from typing import List, Tuple, Union
+# Load data
 
-
-# %%
 import pickle
 import pandas as pd
 
@@ -43,8 +40,9 @@ with open('crawling/news.pickle', 'rb') as f:
 	articles = pickle.load(f)
 print(articles.head())
 
-
 # %%
+# Preprocessing
+
 def pre_processing(text: str) -> str:
     return SOT + ' ' + text + ' ' + EOT
 
@@ -52,8 +50,9 @@ articles['title'] = articles['title'].apply(pre_processing)
 articles['body'] = articles['body'].apply(pre_processing)
 print(articles.head())
 
-
 # %%
+# Analyze morphemes
+
 from PyKomoran import Komoran
 k = Komoran('EXP')
 
@@ -63,16 +62,18 @@ print(title_separated[0][:20])
 body_separated = [k.get_morphes_by_tags(body) for body in articles['body']]
 print(body_separated[0][:20])
 
-
 # %%
+# Features
+
 max_title_morphemes = max([len(title) for title in title_separated])
 print(max_title_morphemes)
 
 max_body_morphemes = max([len(body) for body in body_separated])
 print(max_body_morphemes)
 
-
 # %%
+# Tokenizer
+
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 tokenizer = Tokenizer(filters='')
@@ -89,9 +90,10 @@ print(title_sequence[0][:10])
 body_sequence = tokenizer.texts_to_sequences(body_separated)
 print(body_sequence[0][:10])
 
-
 # %%
-def padding(lst: List[int], max_len: int) -> List[int]:
+# Padding
+
+def padding(lst, max_len):
     return lst + [PAD] * (max_len - len(lst))
 
 title_sequence = [padding(title, max_title_morphemes) for title in title_sequence]
@@ -100,16 +102,20 @@ print(title_sequence[0][:20])
 body_sequence = [padding(body, max_body_morphemes) for body in body_sequence]
 print(body_sequence[0][:20])
 
-
 # %%
+# Convert sequence to numpy array
+
+import numpy as np
+
 titles = np.array(title_sequence)
 print(titles)
 
 bodies = np.array(body_sequence)
 print(bodies)
 
-
 # %%
+# Define training model
+
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Embedding, GRU, Attention, Concatenate, Dense
 from tensorflow.keras.activations import softmax
@@ -195,8 +201,9 @@ from tensorflow.keras.utils import model_to_dot
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
 SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
-
 # %%
+# Prepare training and testing data
+
 from sklearn.model_selection import train_test_split
 
 x_train, x_test, y_train, y_test = train_test_split(
@@ -207,16 +214,18 @@ print(x_test)
 print(y_train)
 print(y_test)
 
-
 # %%
+# Fitting
+
 history = model.fit(
     [x_train, y_train[:, :-1]], y_train[:, 1:],
     epochs=epochs, batch_size=batch_size,
     validation_data=([x_test, y_test[:, :-1]], y_test[:, 1:])
 )
 
-
 # %%
+# Show history
+
 import matplotlib.pyplot as plt
 
 plt.plot(history.history['loss'], label='train')
@@ -224,8 +233,9 @@ plt.plot(history.history['val_loss'], label='test')
 plt.legend()
 plt.show()
 
-
 # %%
+# Define prediction model
+
 # Define Encoder Model
 encoder_model = Model(
     inputs=encoder_inputs,
@@ -235,7 +245,6 @@ encoder_model = Model(
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
 SVG(model_to_dot(encoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
-
 
 # %%
 # Decoder
@@ -275,8 +284,9 @@ decoder_model = Model(
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
 SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
-
 # %%
+# Predict
+
 def encoding(text: str) -> np.ndarray:
     separated = k.get_morphes_by_tags(text)
     tokenized = tokenizer.texts_to_sequences([separated])[0]
@@ -321,4 +331,3 @@ for i, (title, arr) in enumerate(result):
     print('%-3d answer: \t' % i + articles['title'][i][4:-4])
     print('    predict: \t' + title)
     print('             \t' + str(arr))
-
