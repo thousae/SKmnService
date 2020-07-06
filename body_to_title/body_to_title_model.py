@@ -43,7 +43,7 @@ print(articles.head())
 # %%
 # Preprocessing
 
-def pre_processing(text):
+def pre_processing(text: str) -> str:
     return SOT + ' ' + text + ' ' + EOT
 
 articles['title'] = articles['title'].apply(pre_processing)
@@ -287,13 +287,13 @@ SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', for
 # %%
 # Predict
 
-def encoding(text):
+def encoding(text: str) -> np.ndarray:
     separated = k.get_morphes_by_tags(text)
     tokenized = tokenizer.texts_to_sequences([separated])[0]
     sequence = np.array([padding(tokenized, max_body_morphemes)])
     return sequence
 
-def predict(body):
+def predict(body: str) -> Tuple[str, List[Union[int, str]]]:
     input_seq = encoding(body)
     e_out, e_h = encoder_model.predict(input_seq)
 
@@ -301,7 +301,7 @@ def predict(body):
     target_seq[0, 0] = tokenizer.word_index[SOT]
 
     decoded_sentence = ''
-    decoded_list = []
+    decoded_list: List[Union[int, str]] = []
     len_sentence = 0
     while True:
         output_tokens = decoder_model.predict(
