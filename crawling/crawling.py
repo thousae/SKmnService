@@ -43,7 +43,7 @@ def crawl_news_links(amount):
                 link = elem['href']
                 if link.startswith('https://news.naver.com'):
                     news_links.append(link)
-        bar()
+            bar()
     print('%d news found!' % len(news_links))
     return news_links
 
