@@ -28,7 +28,7 @@ learning_late = 0.001
 dropout = 0.4
 
 epochs = 50
-batch_size = 1
+batch_size = 256
 
 # %%
 # Load data
@@ -36,7 +36,7 @@ batch_size = 1
 import pickle
 import pandas as pd
 
-with open('crawling/news.pickle', 'rb') as f:
+with open('../crawling/news.pickle', 'rb') as f:
 	articles = pickle.load(f)
 print(articles.head())
 
@@ -108,10 +108,7 @@ print(body_sequence[0][:20])
 import numpy as np
 
 titles = np.array(title_sequence)
-print(titles)
-
 bodies = np.array(body_sequence)
-print(bodies)
 
 # %%
 # Define training model
@@ -195,11 +192,11 @@ model.compile(
 )
 
 # Display Model Summary
-from IPython.display import SVG
-from tensorflow.keras.utils import model_to_dot
+# from IPython.display import SVG
+# from tensorflow.keras.utils import model_to_dot
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Prepare training and testing data
@@ -207,12 +204,12 @@ SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg
 from sklearn.model_selection import train_test_split
 
 x_train, x_test, y_train, y_test = train_test_split(
-    bodies, titles, test_size=0.33
+    bodies, titles, test_size=0.2
 )
-print(x_train)
-print(x_test)
-print(y_train)
-print(y_test)
+print('x_train: ' + str(x_train.shape))
+print('x_test: ' + str(x_test.shape))
+print('y_train: ' + str(y_train.shape))
+print('y_test: ' + str(y_test.shape))
 
 # %%
 # Fitting
@@ -244,7 +241,7 @@ encoder_model = Model(
 )
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(encoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(encoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Decoder
@@ -282,7 +279,7 @@ decoder_model = Model(
 )
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Predict
