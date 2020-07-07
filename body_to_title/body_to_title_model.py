@@ -36,7 +36,7 @@ batch_size = 1
 import pickle
 import pandas as pd
 
-with open('crawling/news.pickle', 'rb') as f:
+with open('../crawling/news.pickle', 'rb') as f:
 	articles = pickle.load(f)
 print(articles.head())
 
@@ -195,11 +195,11 @@ model.compile(
 )
 
 # Display Model Summary
-from IPython.display import SVG
-from tensorflow.keras.utils import model_to_dot
+# from IPython.display import SVG
+# from tensorflow.keras.utils import model_to_dot
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Prepare training and testing data
@@ -244,7 +244,7 @@ encoder_model = Model(
 )
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(encoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(encoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Decoder
@@ -282,7 +282,7 @@ decoder_model = Model(
 )
 
 # You need to install graphviz! (sudo apt install graphviz or brew install graphviz)
-SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
+# SVG(model_to_dot(decoder_model, show_shapes=True, dpi=65).create(prog='dot', format='svg'))
 
 # %%
 # Predict
