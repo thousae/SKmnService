@@ -36,7 +36,7 @@ def is_sentence(text):
 
 
 def is_hangul(text):
-    return re.match(r'.*[ㄱ-ㅣ가-힣]+.*', text)
+    return re.match(r'.*[ㄱ-ㅣ가-힣]+.*', text) is not None
 
 
 def crawl_news_links(amount):
@@ -95,6 +95,7 @@ def crawl(amount):
                 data['body'].append(body)
             bar()
 
+    print(str(len(data['title'])) + ' news crawled!')
     df = pd.DataFrame(data)
     save_data(df, 'crawling/news.pickle')
 
