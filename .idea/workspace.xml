@@ -19,7 +19,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="" />
+    <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,13 +31,18 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="JupyterTrust" id="9396ce71-f7d5-452d-b223-9fd184ced1a3" />
+  <component name="JupyterTrust" id="9396ce71-f7d5-452d-b223-9fd184ced1a3">
+    <option name="files">
+      <option value="keywords_to_sentence/keywords_to_sentence.ipynb" />
+    </option>
+  </component>
   <component name="ProjectId" id="1eDIGuQbfi9X0iheqKk38Qc5X3Z" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -103,6 +110,8 @@
       <workItem from="1594017373500" duration="4000" />
       <workItem from="1594031102371" duration="3341000" />
       <workItem from="1594039264012" duration="103000" />
+      <workItem from="1594603707407" duration="15000" />
+      <workItem from="1594689701532" duration="70000" />
     </task>
     <servers />
   </component>
