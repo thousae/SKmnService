@@ -22,7 +22,6 @@
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keywords_to_sentence/keywords_to_sentence.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/keywords_to_sentence/keywords_to_sentence.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/statics.py" beforeDir="false" afterPath="$PROJECT_DIR$/util/statics.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +112,7 @@
       <workItem from="1594031102371" duration="3341000" />
       <workItem from="1594039264012" duration="103000" />
       <workItem from="1594603707407" duration="15000" />
-      <workItem from="1594689701532" duration="3132000" />
+      <workItem from="1594689701532" duration="5850000" />
     </task>
     <servers />
   </component>
