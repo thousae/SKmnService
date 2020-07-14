@@ -20,8 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keywords_to_sentence/keywords_to_sentence.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/keywords_to_sentence/keywords_to_sentence.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/textrank/textrank.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +113,7 @@
       <workItem from="1594039264012" duration="103000" />
       <workItem from="1594603707407" duration="15000" />
       <workItem from="1594689701532" duration="8031000" />
-      <workItem from="1594729031229" duration="953000" />
+      <workItem from="1594729031229" duration="1178000" />
     </task>
     <servers />
   </component>
