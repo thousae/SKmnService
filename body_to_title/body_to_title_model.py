@@ -28,7 +28,7 @@ learning_late = 0.001
 dropout = 0.4
 
 epochs = 50
-batch_size = 1
+batch_size = 256
 
 # %%
 # Load data
@@ -43,7 +43,7 @@ print(articles.head())
 # %%
 # Preprocessing
 
-def pre_processing(text):
+def pre_processing(text: str) -> str:
     return SOT + ' ' + text + ' ' + EOT
 
 articles['title'] = articles['title'].apply(pre_processing)
@@ -108,10 +108,7 @@ print(body_sequence[0][:20])
 import numpy as np
 
 titles = np.array(title_sequence)
-print(titles)
-
 bodies = np.array(body_sequence)
-print(bodies)
 
 # %%
 # Define training model
@@ -207,12 +204,12 @@ model.compile(
 from sklearn.model_selection import train_test_split
 
 x_train, x_test, y_train, y_test = train_test_split(
-    bodies, titles, test_size=0.33
+    bodies, titles, test_size=0.2
 )
-print(x_train)
-print(x_test)
-print(y_train)
-print(y_test)
+print('x_train: ' + str(x_train.shape))
+print('x_test: ' + str(x_test.shape))
+print('y_train: ' + str(y_train.shape))
+print('y_test: ' + str(y_test.shape))
 
 # %%
 # Fitting
@@ -287,13 +284,13 @@ decoder_model = Model(
 # %%
 # Predict
 
-def encoding(text):
+def encoding(text: str) -> np.ndarray:
     separated = k.get_morphes_by_tags(text)
     tokenized = tokenizer.texts_to_sequences([separated])[0]
     sequence = np.array([padding(tokenized, max_body_morphemes)])
     return sequence
 
-def predict(body):
+def predict(body: str) -> Tuple[str, List[Union[int, str]]]:
     input_seq = encoding(body)
     e_out, e_h = encoder_model.predict(input_seq)
 
@@ -301,7 +298,7 @@ def predict(body):
     target_seq[0, 0] = tokenizer.word_index[SOT]
 
     decoded_sentence = ''
-    decoded_list = []
+    decoded_list: List[Union[int, str]] = []
     len_sentence = 0
     while True:
         output_tokens = decoder_model.predict(
