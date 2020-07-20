@@ -24,14 +24,18 @@ class Preprocessor:
     def __add_eot_token(text):
         return text + ' ' + Preprocessor.EOT
 
-    def __separate(self, text):
+    def __separate(self, text, sep_by_sentence=False):
         if self.__is_hangul_data:
             if Preprocessor.__okt is None:
                 from konlpy.tag import Okt
                 Preprocessor.__okt = Okt()
             return Preprocessor.__okt.morphs(text)
         else:
-            def tok(t): return sum([word_tokenize(s) for s in sent_tokenize(t)], [])
+            def tok(t):
+                if sep_by_sentence:
+                    return [word_tokenize(s) for s in sent_tokenize(t)]
+                else:
+                    return sum([word_tokenize(s) for s in sent_tokenize(t)], [])
             try:
                 return tok(text)
             except LookupError:
@@ -56,9 +60,9 @@ class Preprocessor:
         self.__is_hangul_data = toggle
         return self
 
-    def separate_text(self, target):
+    def separate_to_words(self, target):
         if isinstance(target, list):
-            return [self.separate_text(elem) for elem in target]
+            return [self.separate_to_words(elem) for elem in target]
         else:
             if self.__add_sot_token:
                 target = Preprocessor.__add_sot_token(target)
@@ -104,8 +108,8 @@ if __name__ == '__main__':
 
     preprocessor = Preprocessor()
 
-    content_separated = preprocessor.separate_text(contents)
-    title_separated = preprocessor.add_tokens(True).separate_text(titles)
+    content_separated = preprocessor.separate_to_words(contents)
+    title_separated = preprocessor.add_tokens(True).separate_to_words(titles)
 
     preprocessor.fit_tokenizer(content_separated)
     preprocessor.fit_tokenizer(title_separated)
