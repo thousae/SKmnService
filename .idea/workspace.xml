@@ -20,8 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/util/preprocessing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +118,8 @@
       <workItem from="1594873633537" duration="87000" />
       <workItem from="1594873733328" duration="1519000" />
       <workItem from="1594878296812" duration="2773000" />
-      <workItem from="1595248681548" duration="473000" />
+      <workItem from="1595248681548" duration="738000" />
+      <workItem from="1595255960114" duration="28000" />
     </task>
     <servers />
   </component>
