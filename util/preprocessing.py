@@ -1,6 +1,7 @@
 from .statics import static_vars
 from nltk.tokenize import word_tokenize, sent_tokenize
 import re
+import numpy as np
 
 
 @static_vars(SOT='sot', EOT='eot', PAD=0, _Preprocessor__okt=None)
@@ -72,7 +73,20 @@ class Preprocessor:
         return self
 
     def tokenize(self, sequence):
-        return self.__tokenizer.texts_to_sequences(sequence)
+        result = self.__tokenizer.texts_to_sequences(sequence)
+        result.to_numpy = lambda value: np.array(value)
+        return result
+
+    def positional_encoding(self, sequence, dim_model, scale=10000):
+        if not isinstance(sequence, np.ndarray):
+            raise ValueError('The sequence must be numpy array')
+        pos = np.arange(self.__sequence_len)[:, np.newaxis]
+        i = np.arange(dim_model)[np.newaxis, :]
+        i[:, 1::2] = i[:, 1::2] - 1
+        encoder = pos / np.power(scale, i / np.float32(dim_model))
+        encoder[:, 0::2] = np.sin(encoder[:, 0::2])
+        encoder[:, 1::2] = np.cos(encoder[:, 1::2])
+        return sequence + encoder
 
     @property
     def max_words(self):
