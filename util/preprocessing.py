@@ -6,8 +6,6 @@ import re
 @static_vars(SOT='sot', EOT='eot', PAD=0, _Preprocessor__okt=None)
 class Preprocessor:
     def __init__(self):
-        self.__add_sot_token = False
-        self.__add_eot_token = False
         self.__is_hangul_data = False
         self.__max_words = None
         self.__tokenizer = None
@@ -41,32 +39,18 @@ class Preprocessor:
                 nltk.download('punkt')
                 return tok(text)
 
-    def add_sot(self, toggle=True):
-        self.__add_sot_token = toggle
-        return self
-
-    def add_eot(self, toggle=True):
-        self.__add_eot_token = toggle
-        return self
-
-    def add_tokens(self, toggle=True):
-        self.add_sot(toggle)
-        self.add_eot(toggle)
-        return self
-
     def is_hangul_data(self, toggle=True):
         self.__is_hangul_data = toggle
         return self
 
-    def separate_to_words(self, target):
+    def separate_to_words(self, target, add_token=False, sep_by_sentence=False):
         if isinstance(target, list):
             return [self.separate_to_words(elem) for elem in target]
         else:
-            if self.__add_sot_token:
+            if add_token:
                 target = Preprocessor.__add_sot_token(target)
-            if self.__add_eot_token:
                 target = Preprocessor.__add_eot_token(target)
-            separated = self.__separate(target)
+            separated = self.__separate(target, sep_by_sentence=sep_by_sentence)
             return separated
 
     def fit_tokenizer(self, sequence):
@@ -107,7 +91,7 @@ if __name__ == '__main__':
     preprocessor = Preprocessor()
 
     content_separated = preprocessor.separate_to_words(contents)
-    title_separated = preprocessor.add_tokens(True).separate_to_words(titles)
+    title_separated = preprocessor.separate_to_words(titles, add_token=True)
 
     preprocessor.fit_tokenizer(content_separated)
     preprocessor.fit_tokenizer(title_separated)
