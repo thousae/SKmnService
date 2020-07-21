@@ -32,10 +32,8 @@ class Preprocessor:
             return Preprocessor.__okt.morphs(text)
         else:
             def tok(t):
-                if sep_by_sentence:
-                    return [word_tokenize(s) for s in sent_tokenize(t)]
-                else:
-                    return sum([word_tokenize(s) for s in sent_tokenize(t)], [])
+                sep = [word_tokenize(s) for s in sent_tokenize(t)]
+                return sep if sep_by_sentence else return sum(sep, [])
             try:
                 return tok(text)
             except LookupError:
