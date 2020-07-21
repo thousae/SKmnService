@@ -7,6 +7,7 @@ import re
 class Preprocessor:
     def __init__(self):
         self.__is_hangul_data = False
+        self.__sequence_len = 0
         self.__max_words = None
         self.__tokenizer = None
 
@@ -51,7 +52,15 @@ class Preprocessor:
                 target = Preprocessor.__add_sot_token(target)
                 target = Preprocessor.__add_eot_token(target)
             separated = self.__separate(target, sep_by_sentence=sep_by_sentence)
+            self.__sequence_len = max(self.__sequence_len, len(separated))
             return separated
+
+    def padding(self, target):
+        if not isinstance(target, list):
+            raise ValueError('The target must be list')
+        if isinstance(target[0], list):
+            return [padding(elem) for elem in target]
+        return target + [Preprocessor.PAD] * (self.__sequence_len - len(target))
 
     def fit_tokenizer(self, sequence):
         if self.__tokenizer is None:
@@ -64,6 +73,10 @@ class Preprocessor:
 
     def tokenize(self, sequence):
         return self.__tokenizer.texts_to_sequences(sequence)
+
+    @property
+    def max_words(self):
+        return self.__sequence_len
 
     @property
     def max_words(self):
