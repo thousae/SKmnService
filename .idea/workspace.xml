@@ -20,8 +20,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SKmnService.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SKmnService.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/util/preprocessing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +44,6 @@
   </component>
   <component name="JupyterTrust" id="9396ce71-f7d5-452d-b223-9fd184ced1a3">
     <option name="files">
-      <option value="body_to_title/body_to_title_transformer.ipynb" />
       <option value="keywords_to_sentence/keywords_to_sentence.ipynb" />
     </option>
   </component>
@@ -66,6 +68,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -73,6 +76,28 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="SKmnService" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="preprocessing" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="SKmnService" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -120,6 +145,12 @@
       <workItem from="1594878296812" duration="2773000" />
       <workItem from="1595248681548" duration="738000" />
       <workItem from="1595255960114" duration="28000" />
+      <workItem from="1595378659636" duration="207000" />
+      <workItem from="1595378901078" duration="118000" />
+      <workItem from="1595392733600" duration="81000" />
+      <workItem from="1595392838978" duration="546000" />
+      <workItem from="1595393535669" duration="5241000" />
+      <workItem from="1595403563092" duration="2928000" />
     </task>
     <servers />
   </component>
@@ -143,6 +174,10 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1594872562220" />
+    <state x="628" y="287" key="FileChooserDialogImpl" timestamp="1595392950632">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="628" y="287" key="FileChooserDialogImpl/0.0.1680.1050@0.0.1680.1050" timestamp="1595392950632" />
     <state width="1638" height="295" key="GridCell.Tab.0.bottom" timestamp="1594873618135">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -159,10 +194,18 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state width="1638" height="295" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1594873618134" />
+    <state x="341" y="164" key="SettingsEditor" timestamp="1595392790569">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="341" y="164" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1595392790569" />
     <state x="505" y="233" width="670" height="58" key="search.everywhere.popup" timestamp="1594689944434">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="505" y="233" width="670" height="58" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1594689944434" />
+    <state x="570" y="434" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1595379079627">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="570" y="434" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1595379079627" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SKmnService$crawling.coverage" NAME="crawling Coverage Results" MODIFIED="1594034808091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/crawling" />
