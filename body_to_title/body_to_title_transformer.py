@@ -16,39 +16,15 @@ import pickle
 
 """### Loading Data"""
 
-import csv
-
-summary = []
-document = []
-
-with open('data/summary1.csv', 'r') as f:
-  rdr = csv.reader(f)
-  for line in rdr:
-    if line[1] is not None and line[2] is not None:
-      summary.append(line[1])
-      document.append(line[2])
-  summary = summary[1:]
-  document = document[1:]
-
-with open('data/summary2.csv', 'r') as f:
-  temp_summary = []
-  temp_document = []
-  rdr = csv.reader(f)
-  for line in rdr:
-    if line[1] is not None and line[2] is not None:
-      temp_summary.append(line[1])
-      temp_document.append(line[2])
-  summary += temp_summary[1:]
-  document += temp_document[1:]
-
-document[30], summary[30]
+with open('../data/articles.csv', 'rb') as f:
+    data = pd.read_csv(f)
+summary = data['title'].tolist()
+document = data['summary'].tolist()
 
 """### Preprocessing"""
 
 # for decoder sequence
 summary = ['sot ' + x + ' eot' for x in summary]
-
-summary[0]
 
 """#### Tokenizing the texts into integer tokens"""
 
@@ -65,30 +41,14 @@ summary_tokenizer.fit_on_texts(summary)
 inputs = document_tokenizer.texts_to_sequences(document)
 targets = summary_tokenizer.texts_to_sequences(summary)
 
-summary_tokenizer.texts_to_sequences(["This is a test"])
-
-summary_tokenizer.sequences_to_texts([[65, 17, 13, 580]])
-
 encoder_vocab_size = len(document_tokenizer.word_index) + 1
 decoder_vocab_size = len(summary_tokenizer.word_index) + 1
-
-# vocab_size
-encoder_vocab_size, decoder_vocab_size
-
-"""#### Obtaining insights on lengths for defining maxlen"""
-
-document_lengths = pd.Series([len(x) for x in document])
-summary_lengths = pd.Series([len(x) for x in summary])
-
-document_lengths.describe()
-
-summary_lengths.describe()
 
 # maxlen
 # taking values > and round figured to 75th percentile
 # at the same time not leaving high variance
-encoder_maxlen = document_lengths.max
-decoder_maxlen = summary_lengths.max
+encoder_maxlen = max([len(x) for x in document])
+decoder_maxlen = max([len(x) for x in summary])
 
 """#### Padding/Truncating sequences for identical sequence lengths"""
 
@@ -101,7 +61,7 @@ inputs = tf.cast(inputs, dtype=tf.int32)
 targets = tf.cast(targets, dtype=tf.int32)
 
 BUFFER_SIZE = 20000
-BATCH_SIZE = 64
+BATCH_SIZE = 1
 
 dataset = tf.data.Dataset.from_tensor_slices((inputs, targets)).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
