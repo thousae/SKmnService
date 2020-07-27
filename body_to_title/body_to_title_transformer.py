@@ -18,6 +18,7 @@ import pickle
 
 with open('../data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
+data = data.dropna()
 summary = data['title'].tolist()
 document = data['summary'].tolist()
 
