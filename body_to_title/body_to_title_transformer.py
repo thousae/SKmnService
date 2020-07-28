@@ -13,19 +13,20 @@ import tensorflow as tf
 import time
 import re
 import pickle
+from alive_progress import alive_bar
 
 """### Loading Data"""
 
-with open('../data/articles.csv', 'rb') as f:
+with open('data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
 data = data.dropna()
-summary = data['title'].tolist()
-document = data['summary'].tolist()
+title = data['title'].tolist()
+content = data['summary'].tolist()
 
 """### Preprocessing"""
 
 # for decoder sequence
-summary = ['sot ' + x + ' eot' for x in summary]
+title = ['sot ' + x + ' eot' for x in title]
 
 """#### Tokenizing the texts into integer tokens"""
 
@@ -33,23 +34,23 @@ summary = ['sot ' + x + ' eot' for x in summary]
 filters = '!"#$%&()*+,-./:;=?@[\\]^_`{|}~\t\n'
 oov_token = 'unk'
 
-document_tokenizer = tf.keras.preprocessing.text.Tokenizer(oov_token=oov_token)
-summary_tokenizer = tf.keras.preprocessing.text.Tokenizer(filters=filters, oov_token=oov_token)
+content_tokenizer = tf.keras.preprocessing.text.Tokenizer(oov_token=oov_token)
+title_tokenizer = tf.keras.preprocessing.text.Tokenizer(filters=filters, oov_token=oov_token)
 
-document_tokenizer.fit_on_texts(document)
-summary_tokenizer.fit_on_texts(summary)
+content_tokenizer.fit_on_texts(content)
+title_tokenizer.fit_on_texts(title)
 
-inputs = document_tokenizer.texts_to_sequences(document)
-targets = summary_tokenizer.texts_to_sequences(summary)
+inputs = content_tokenizer.texts_to_sequences(content)
+targets = title_tokenizer.texts_to_sequences(title)
 
-encoder_vocab_size = len(document_tokenizer.word_index) + 1
-decoder_vocab_size = len(summary_tokenizer.word_index) + 1
+encoder_vocab_size = len(content_tokenizer.word_index) + 1
+decoder_vocab_size = len(title_tokenizer.word_index) + 1
 
 # maxlen
 # taking values > and round figured to 75th percentile
 # at the same time not leaving high variance
-encoder_maxlen = max([len(x) for x in document])
-decoder_maxlen = max([len(x) for x in summary])
+encoder_maxlen = max([len(x) for x in content])
+decoder_maxlen = max([len(x) for x in title])
 
 """#### Padding/Truncating sequences for identical sequence lengths"""
 
@@ -322,7 +323,7 @@ class Transformer(tf.keras.Model):
 
 # hyper-params
 num_layers = 6
-d_model = 216
+d_model = 256
 dff = 512
 num_heads = 8
 EPOCHS = 50
@@ -372,8 +373,8 @@ transformer = Transformer(
     dff,
     encoder_vocab_size, 
     decoder_vocab_size, 
-    pe_input=encoder_vocab_size, 
-    pe_target=decoder_vocab_size,
+    pe_input=encoder_maxlen, 
+    pe_target=decoder_maxlen,
 )
 
 """#### Masks"""
@@ -429,36 +430,31 @@ for epoch in range(EPOCHS):
     start = time.time()
 
     train_loss.reset_states()
-  
-    for (batch, (inp, tar)) in enumerate(dataset):
-        train_step(inp, tar)
-    
-        # 55k samples
-        # we display 3 batch results -- 0th, middle and last one (approx)
-        # 55k / 64 ~ 858; 858 / 2 = 429
-        if batch % 429 == 0:
-            print ('Epoch {} Batch {} Loss {:.4f}'.format(epoch + 1, batch, train_loss.result()))
+
+    print('Epoch %d' % epoch)
+    with alive_bar(len(title)) as bar:
+        for (batch, (inp, tar)) in enumerate(dataset):
+            train_step(inp, tar)
+            bar('loss: %d' % train_loss.result())
 
     if (epoch + 1) % 5 == 0:
         ckpt_save_path = ckpt_manager.save()
-        print ('Saving checkpoint for epoch {} at {}'.format(epoch+1, ckpt_save_path))
+        print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
     
     loss = train_loss.result()
     print ('Epoch {} Loss {:.4f}'.format(epoch + 1, loss))
     losses.append(loss)
 
-    print ('Time taken for 1 epoch: {} secs\n'.format(time.time() - start))
-
 with open('losses.pickle', 'wb') as f:
     pickle.dump(losses, f)
 
 def evaluate(input_document):
-    input_document = document_tokenizer.texts_to_sequences([input_document])
+    input_document = content_tokenizer.texts_to_sequences([input_document])
     input_document = tf.keras.preprocessing.sequence.pad_sequences(input_document, maxlen=encoder_maxlen, padding='post', truncating='post')
 
     encoder_input = tf.expand_dims(input_document[0], 0)
 
-    decoder_input = [summary_tokenizer.word_index["<go>"]]
+    decoder_input = [title_tokenizer.word_index["<go>"]]
     output = tf.expand_dims(decoder_input, 0)
     
     for i in range(decoder_maxlen):
@@ -476,7 +472,7 @@ def evaluate(input_document):
         predictions = predictions[: ,-1:, :]
         predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
 
-        if predicted_id == summary_tokenizer.word_index["<stop>"]:
+        if predicted_id == title_tokenizer.word_index["<stop>"]:
             return tf.squeeze(output, axis=0), attention_weights
 
         output = tf.concat([output, predicted_id], axis=-1)
