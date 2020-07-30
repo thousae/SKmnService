@@ -366,6 +366,7 @@ def loss_function(real, pred):
     return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
 
 train_loss = tf.keras.metrics.Mean(name='train_loss')
+test_loss = tf.keras.metrics.Mean(name='test_loss')
 
 """#### Transformer"""
 
@@ -407,7 +408,7 @@ if ckpt_manager.latest_checkpoint:
 """#### Training steps"""
 
 @tf.function
-def train_step(inp, tar, optimize=True):
+def train_step(inp, tar, train=True):
     tar_inp = tar[:, :-1]
     tar_real = tar[:, 1:]
 
@@ -423,11 +424,13 @@ def train_step(inp, tar, optimize=True):
         )
         loss = loss_function(tar_real, predictions)
 
-    if optimize:
+    if train:
         gradients = tape.gradient(loss, transformer.trainable_variables)   
         optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
+        train_loss(loss)
+    else:
+        test_loss(loss)
 
-    train_loss(loss)
 
 history = {'loss': [], 'val_loss': []}
 train_size = int(len(title) * TRAIN_RATE)
@@ -444,20 +447,19 @@ for epoch in range(EPOCHS):
             if batch < train_size:
                 train_step(inp, tar)
                 bar()
-                bar.text('loss: %d' % train_loss.result().numpy())
+                bar.text('loss: %s' % train_loss.result().numpy())
             else:
-                train_step(inp, tar, optimize=False)
-                val_loss = val_loss * num_val + train_loss.result().numpy()
-                num_val += 1
-                val_loss = val_loss / num_val
+                train_step(inp, tar, train=False)
+                val_loss = test_loss.result().numpy()
                 bar()
-                bar.text('val_loss: %d' % val_loss)
+                bar.text('val_loss: %s' % val_loss)
 
     if (epoch + 1) % 5 == 0:
         ckpt_save_path = ckpt_manager.save()
         print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
     
     loss = train_loss.result().numpy()
+    val_loss = test_loss.result().numpy()
     print ('Epoch {} loss {:.4f} val_loss {:.4f}'.format(epoch + 1, loss, val_loss))
     history['loss'].append(loss)
     history['val_loss'].append(val_loss)
