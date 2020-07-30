@@ -21,7 +21,7 @@ DATA_SIZE = 10000
 
 with open('../data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
-data = data[:DATA_SIZE].dropna()
+data = data.dropna()[:DATA_SIZE]
 title = data['title'].tolist()
 content = data['summary'].tolist()
 
@@ -436,7 +436,7 @@ for epoch in range(EPOCHS):
 
     train_loss.reset_states()
 
-    print('Epoch %d' % epoch)
+    print('Epoch %d' % (epoch + 1))
     val_loss = .0
     num_val = 0
     with alive_bar(len(title)) as bar:
@@ -444,14 +444,14 @@ for epoch in range(EPOCHS):
             if batch < train_size:
                 train_step(inp, tar)
                 bar()
-                bar.text('loss: %d' % train_loss.result().numpy())
+                bar.text('loss: %s' % train_loss.result().numpy())
             else:
                 train_step(inp, tar, optimize=False)
                 val_loss = val_loss * num_val + train_loss.result().numpy()
                 num_val += 1
                 val_loss = val_loss / num_val
                 bar()
-                bar.text('val_loss: %d' % val_loss)
+                bar.text('val_loss: %s' % val_loss)
 
     if (epoch + 1) % 5 == 0:
         ckpt_save_path = ckpt_manager.save()
