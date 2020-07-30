@@ -21,7 +21,7 @@ DATA_SIZE = 10000
 
 with open('../data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
-data = data[:DATA_SIZE].dropna()
+data = data.dropna()[:DATA_SIZE]
 title = data['title'].tolist()
 content = data['summary'].tolist()
 
@@ -439,7 +439,7 @@ for epoch in range(EPOCHS):
 
     train_loss.reset_states()
 
-    print('Epoch %d' % epoch)
+    print('Epoch %d' % (epoch + 1))
     val_loss = .0
     num_val = 0
     with alive_bar(len(title)) as bar:
