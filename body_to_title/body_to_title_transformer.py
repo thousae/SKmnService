@@ -19,7 +19,7 @@ from alive_progress import alive_bar
 
 DATA_SIZE = 10000
 
-with open('data/articles.csv', 'rb') as f:
+with open('../data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
 data = data[:DATA_SIZE].dropna()
 title = data['title'].tolist()
@@ -430,16 +430,16 @@ def train_step(inp, tar, optimize=True):
     train_loss(loss)
 
 history = {'loss': [], 'val_loss': []}
+train_size = int(len(title) * TRAIN_RATE)
 for epoch in range(EPOCHS):
     start = time.time()
 
     train_loss.reset_states()
 
     print('Epoch %d' % epoch)
-    train_size = len(title) * TRAIN_RATE
-    sum_val_loss = .0
+    val_loss = .0
     num_val = 0
-    with alive_bar(train_size) as bar:
+    with alive_bar(len(title)) as bar:
         for (batch, (inp, tar)) in enumerate(dataset):
             if batch < train_size:
                 train_step(inp, tar)
@@ -447,15 +447,17 @@ for epoch in range(EPOCHS):
                 bar.text('loss: %d' % train_loss.result().numpy())
             else:
                 train_step(inp, tar, optimize=False)
-                sum_val_loss += train_loss.result().numpy()
+                val_loss = val_loss * num_val + train_loss.result().numpy()
                 num_val += 1
+                val_loss = val_loss / num_val
+                bar()
+                bar.text('val_loss: %d' % val_loss)
 
     if (epoch + 1) % 5 == 0:
         ckpt_save_path = ckpt_manager.save()
         print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
     
     loss = train_loss.result().numpy()
-    val_loss = sum_val_loss / num_val
     print ('Epoch {} loss {:.4f} val_loss {:.4f}'.format(epoch + 1, loss, val_loss))
     history['loss'].append(loss)
     history['val_loss'].append(val_loss)
