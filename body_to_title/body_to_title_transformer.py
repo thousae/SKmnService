@@ -17,9 +17,11 @@ from alive_progress import alive_bar
 
 """### Loading Data"""
 
+DATA_SIZE = 10000
+
 with open('data/articles.csv', 'rb') as f:
     data = pd.read_csv(f)
-data = data.dropna()
+data = data[:DATA_SIZE].dropna()
 title = data['title'].tolist()
 content = data['summary'].tolist()
 
@@ -322,11 +324,12 @@ class Transformer(tf.keras.Model):
 """### Training"""
 
 # hyper-params
-num_layers = 6
+num_layers = 3
 d_model = 256
 dff = 512
 num_heads = 8
-EPOCHS = 50
+EPOCHS = 20
+TRAIN_RATE = 0.8
 
 """#### Adam optimizer with custom learning rate scheduling"""
 
@@ -404,7 +407,7 @@ if ckpt_manager.latest_checkpoint:
 """#### Training steps"""
 
 @tf.function
-def train_step(inp, tar):
+def train_step(inp, tar, optimize=True):
     tar_inp = tar[:, :-1]
     tar_real = tar[:, 1:]
 
@@ -420,33 +423,45 @@ def train_step(inp, tar):
         )
         loss = loss_function(tar_real, predictions)
 
-    gradients = tape.gradient(loss, transformer.trainable_variables)    
-    optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
+    if optimize:
+        gradients = tape.gradient(loss, transformer.trainable_variables)   
+        optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
 
     train_loss(loss)
 
-losses = []
+history = {'loss': [], 'val_loss': []}
 for epoch in range(EPOCHS):
     start = time.time()
 
     train_loss.reset_states()
 
     print('Epoch %d' % epoch)
-    with alive_bar(len(title)) as bar:
+    train_size = len(title) * TRAIN_RATE
+    sum_val_loss = .0
+    num_val = 0
+    with alive_bar(train_size) as bar:
         for (batch, (inp, tar)) in enumerate(dataset):
-            train_step(inp, tar)
-            bar('loss: %d' % train_loss.result())
+            if batch < train_size:
+                train_step(inp, tar)
+                bar()
+                bar.text('loss: %d' % train_loss.result().numpy())
+            else:
+                train_step(inp, tar, optimize=False)
+                sum_val_loss += train_loss.result().numpy()
+                num_val += 1
 
     if (epoch + 1) % 5 == 0:
         ckpt_save_path = ckpt_manager.save()
         print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
     
-    loss = train_loss.result()
-    print ('Epoch {} Loss {:.4f}'.format(epoch + 1, loss))
-    losses.append(loss)
+    loss = train_loss.result().numpy()
+    val_loss = sum_val_loss / num_val
+    print ('Epoch {} loss {:.4f} val_loss {:.4f}'.format(epoch + 1, loss, val_loss))
+    history['loss'].append(loss)
+    history['val_loss'].append(val_loss)
 
-with open('losses.pickle', 'wb') as f:
-    pickle.dump(losses, f)
+with open('history.pickle', 'wb') as f:
+    pickle.dump(history, f)
 
 def evaluate(input_document):
     input_document = content_tokenizer.texts_to_sequences([input_document])
