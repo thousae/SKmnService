@@ -454,9 +454,8 @@ for epoch in range(EPOCHS):
                 bar()
                 bar.text('val_loss: %s' % val_loss)
 
-    if (epoch + 1) % 5 == 0:
-        ckpt_save_path = ckpt_manager.save()
-        print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
+    ckpt_save_path = ckpt_manager.save()
+    print ('Saving checkpoint for epoch {} at {}'.format(epoch + 1, ckpt_save_path))
     
     loss = train_loss.result().numpy()
     val_loss = test_loss.result().numpy()
@@ -466,6 +465,8 @@ for epoch in range(EPOCHS):
 
 with open('history.pickle', 'wb') as f:
     pickle.dump(history, f)
+
+transformer.save('transformer_model.h5')
 
 def evaluate(input_document):
     input_document = content_tokenizer.texts_to_sequences([input_document])
