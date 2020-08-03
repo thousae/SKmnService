@@ -20,11 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/SKmnService.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SKmnService.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/util/preprocessing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +71,7 @@
       <recent name="$PROJECT_DIR$/util" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.body_to_title_transformer_functional">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="SKmnService" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -90,6 +86,25 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="body_to_title_transformer_functional" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="SKmnService" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="/usr/local/bin/python3.8" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/body_to_title" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -120,6 +135,10 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.preprocessing" />
+      <item itemvalue="Python.body_to_title_transformer_functional" />
+    </list>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -170,10 +189,14 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1594872562220">
+    <state x="474" y="210" key="#Inspections" timestamp="1596420440638">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1594872562220" />
+    <state x="474" y="210" key="#Inspections/0.0.1680.1050@0.0.1680.1050" timestamp="1596420440638" />
+    <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1596422778196">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1596422778196" />
     <state x="628" y="287" key="FileChooserDialogImpl" timestamp="1595392950632">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
