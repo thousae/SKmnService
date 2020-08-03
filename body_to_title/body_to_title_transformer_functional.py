@@ -5,7 +5,7 @@ import pandas as pd
 
 # tensorflow
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Reshape, Concatenate, Attention, LayerNormalization, Dense
+from tensorflow.keras.layers import Input, Attention, LayerNormalization, Dense
 from tensorflow.keras.activations import relu, softmax
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
@@ -92,7 +92,8 @@ def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
 
 DATA_SIZE = 5
 
-data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+# data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+data_filename = 'dummy'
 try:
     with open(data_filename, 'rb') as f_data:
         print('file found:', data_filename)
@@ -130,13 +131,17 @@ except FileNotFoundError:
 
 
 # Training Model
-NUM_HEADS = 8
+NUM_HEADS = 10
 NUM_LAYERS = 6
 NUM_FF_HIDDEN = 512
 BATCH_SIZE = 1
 EPOCHS = 20
 
+# Setting
+tf.config.experimental_run_functions_eagerly(True)
 
+
+@tf.function
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     input_dim = input_tensor.shape[-2]
     dim_model = input_tensor.shape[-1]
@@ -152,40 +157,48 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
+@tf.function
 def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
-    return tf.reduce_all(tf.math.equal(input_tensor, EOT_VEC), -1)
+    return tf.reduce_any(tf.math.not_equal(input_tensor, EOT_VEC), -1)
 
 
-def multi_head_attention(query: tf.Tensor, value: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
-    separate_layer = Reshape((NUM_HEADS, -1, embedding_dim))
+@tf.function
+def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
+                         query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
+    len_query = query.shape[-2]
+    len_value = value.shape[-2]
 
-    query_separated = separate_layer(query)
-    value_separated = separate_layer(value)
+    query_separated = tf.reshape(query, (BATCH_SIZE, NUM_HEADS, len_query, -1))
+    value_separated = tf.reshape(value, (BATCH_SIZE, NUM_HEADS, len_value, -1))
 
     output_list: List[tf.Tensor] = []
-    reshape_layer = Reshape((-1, embedding_dim))
-    concat_layer = Concatenate(axis=-2)
 
     for i in range(NUM_HEADS):
-        query_input = reshape_layer(query_separated[:, i])
-        value_input = reshape_layer(value_separated[:, i])
+        query_input = tf.reshape(query_separated[:, i], (len_query, -1))
+        value_input = tf.reshape(value_separated[:, i], (len_query, -1))
         attention_layer = Attention(
             use_scale=True,
-            name='masked_' if mask is not None else '' + 'multi_head_attention_%d' % (i + 1)
+            name='multi_head_attention_%d' % (i + 1)
         )
-        attention_output = attention_layer([query_input, value_input], mask=mask)
+        attention_output = attention_layer(
+            [query_input, value_input],
+            mask=[query_mask, value_mask]
+        )
         output_list.append(attention_output)
-    output = concat_layer(output_list)
+    output = tf.concat(output_list, axis=-2)
     return output
 
 
-def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor, epsilon: float = 1e-6) -> tf.Tensor:
+@tf.function
+def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
+                          epsilon: float = 1e-6) -> tf.Tensor:
     added_tensor = input_tensor + adding_tensor
     norm_layer = LayerNormalization(epsilon=epsilon, name='normalization_layer')
     output = norm_layer(added_tensor)
     return output
 
 
+@tf.function
 def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
     relu_layer = Dense(NUM_FF_HIDDEN, activation=relu, name='feed_forward_layer_1')
     relu_output = relu_layer(input_tensor)
@@ -197,7 +210,8 @@ def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
 
 
 def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
-    attention_output = multi_head_attention(input_tensor, input_tensor, mask)
+    attention_output = multi_head_attention(input_tensor, input_tensor,
+                                            query_mask=mask, value_mask=mask)
     output = add_and_normalization(input_tensor, attention_output)
 
     ff_output = feed_forward(output)
@@ -206,11 +220,14 @@ def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
     return output
 
 
-def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
-    self_attention_output = multi_head_attention(dec_input, dec_input, mask)
+def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
+                  enc_mask: tf.Tensor = None, dec_mask: tf.Tensor = None) -> tf.Tensor:
+    self_attention_output = multi_head_attention(dec_input, dec_input,
+                                                 query_mask=dec_mask, value_mask=dec_mask)
     output = add_and_normalization(dec_input, self_attention_output)
 
-    attention_output = multi_head_attention(output, enc_output, mask)
+    attention_output = multi_head_attention(output, enc_output,
+                                            query_mask=dec_mask, value_mask=enc_mask)
     output = add_and_normalization(output, attention_output)
 
     ff_output = feed_forward(output)
@@ -219,26 +236,29 @@ def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor, mask: tf.Tensor =
     return output
 
 
-def encoder(input_tensor: tf.Tensor) -> tf.Tensor:
+def encoder(input_tensor: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
     mask = create_padding_mask(input_tensor)
     output = positional_encoding(input_tensor)
     for _ in range(NUM_LAYERS):
         output = encoder_layer(output, mask)
-    return output
+    return output, mask
 
 
-def decoder(dec_input: tf.Tensor, enc_output: tf.Tensor) -> tf.Tensor:
-    mask = create_padding_mask(dec_input)
+def decoder(dec_input: tf.Tensor, enc_output: tf.Tensor, enc_mask: tf.Tensor) -> tf.Tensor:
+    dec_mask = create_padding_mask(dec_input)
     output = positional_encoding(dec_input)
     for _ in range(NUM_LAYERS):
-        output = decoder_layer(output, enc_output, mask)
+        output = decoder_layer(output, enc_output, enc_mask=enc_mask, dec_mask=dec_mask)
     return output
 
 
 def transformer(enc_input: tf.Tensor, dec_input: tf.Tensor) -> tf.Tensor:
-    encoder_output = encoder(enc_input)
-    decoder_output = decoder(dec_input, encoder_output)
-    return decoder_output
+    encoder_output, enc_mask = encoder(enc_input)
+    decoder_output = decoder(dec_input, encoder_output, enc_mask)
+
+    final_layer = Dense(embedding_dim)
+    output = final_layer(decoder_output)
+    return output
 
 
 encoder_input = Input(
@@ -280,13 +300,16 @@ class CustomSchedule(LearningRateSchedule, ABC):
 
 learning_rate = CustomSchedule(embedding_dim)
 model.compile(
-    optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
+    optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+    loss=SparseCategoricalCrossentropy(from_logits=True, reduction='none')
 )
+
+model.summary()
 
 history = model.fit(
     [X_enc_train, X_dec_train], Y_train,
     epochs=EPOCHS, batch_size=BATCH_SIZE,
-    validation_data=([X_enc_test, X_dec_test], Y_test)
+    validation_data=([X_enc_test, X_dec_test], Y_test),
 )
 with open('history.pickle', 'wb') as f_history:
     pickle.dump(history.history, f_history)
@@ -310,14 +333,14 @@ def predict(text: str) -> str:
     text_sequence = word_to_vector(text_padded)
     inputs = tf.constant(text_sequence)
 
-    enc_output = encoder(inputs)
+    enc_output, enc_mask = encoder(inputs)
 
     now = 'sot'
     dec_input = get_initial_sequence()
     output: List[str] = []
     idx = 0
     while now != 'eot' and idx < max_word_title:
-        dec_output = decoder(dec_input, enc_output)
+        dec_output = decoder(dec_input, enc_output, enc_mask)
 
         idx = len(output)
         now = word2vec.similar_by_vector(dec_output[idx].numpy())
@@ -326,3 +349,7 @@ def predict(text: str) -> str:
         dec_input[idx + 1] = dec_output[idx]
 
     return ' '.join(output)
+
+
+print(contents[0])
+print(predict(contents[0]))
