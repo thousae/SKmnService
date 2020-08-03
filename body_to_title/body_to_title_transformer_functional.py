@@ -316,7 +316,8 @@ def predict(text: str) -> str:
     now = 'sot'
     dec_input = get_initial_sequence()
     output: List[str] = []
-    while now != 'eot':
+    idx = 0
+    while now != 'eot' and idx < max_word_title:
         dec_output = decoder(dec_input, enc_output)
 
         idx = len(output)

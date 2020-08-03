@@ -20,7 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
