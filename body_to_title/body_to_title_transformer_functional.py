@@ -25,7 +25,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # typing
-from typing import List
+from typing import List, Tuple
 
 # utils
 from nltk import word_tokenize, sent_tokenize
@@ -84,6 +84,12 @@ def padding(word_list: List[str], max_len: int) -> List[str]:
     return word_list + ['eot'] * (max_len - len(word_list))
 
 
+def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
+        -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data)
+    return x_train, x_test, y_train[:, :-1], y_test[:, :-1], y_train[:, 1:], y_test[:, 1:]
+
+
 DATA_SIZE = 5
 
 data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
@@ -92,10 +98,10 @@ try:
         print('file found:', data_filename)
 
         learning_data = pickle.load(f_data)
-        X_train, X_test, Y_train, Y_test = learning_data
+        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test = learning_data
 
-        max_word_title = Y_train.shape[1]
-        max_word_content = X_train.shape[1]
+        max_word_title = Y_train.shape[1] + 1
+        max_word_content = X_enc_test.shape[1]
 except FileNotFoundError:
     # Import Data
     titles, contents = get_data(DATA_SIZE, content='summary')
@@ -116,10 +122,10 @@ except FileNotFoundError:
     X_data = np.array(content_sequences)
     Y_data = np.array(title_sequences)
 
-    learning_data = train_test_split(X_data, Y_data)
+    learning_data = encoder_decoder_data_split(X_data, Y_data)
     with open(data_filename, 'wb') as f:
         pickle.dump(learning_data, f)
-    X_train, X_test, Y_train, Y_test = learning_data
+    X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test = learning_data
 
 
 # Training Model
@@ -234,11 +240,6 @@ def transformer(enc_input: tf.Tensor, dec_input: tf.Tensor) -> tf.Tensor:
     return decoder_output
 
 
-def output_concatenate(dec_input: tf.Tensor, output: tf.Tensor) -> tf.Tensor:
-    concatenate = Concatenate(axis=-2)
-    return concatenate(dec_input[:, 0], output)
-
-
 encoder_input = Input(
     shape=(max_word_content, embedding_dim),
     batch_size=BATCH_SIZE,
@@ -251,10 +252,7 @@ decoder_input = Input(
     name='output_layer'
 )
 
-transformer_training_output = output_concatenate(
-    decoder_input,
-    transformer(encoder_input, decoder_input[:, :-1, ...])
-)
+transformer_training_output = transformer(encoder_input, decoder_input)
 
 model = Model(
     inputs=[encoder_input, decoder_input],
@@ -285,9 +283,9 @@ model.compile(
 )
 
 history = model.fit(
-    [X_train, Y_train], Y_train,
+    [X_enc_train, X_dec_train], Y_train,
     epochs=EPOCHS, batch_size=BATCH_SIZE,
-    validation_data=([X_test, Y_test], Y_test)
+    validation_data=([X_enc_test, X_dec_test], Y_test)
 )
 with open('history.pickle', 'wb') as f_history:
     pickle.dump(history.history, f_history)
