@@ -97,8 +97,8 @@ try:
     with open(data_filename, 'rb') as f_data:
         print('file found:', data_filename)
 
-        learning_data = pickle.load(f_data)
-        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test = learning_data
+        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
+            = encoder_decoder_data_split(*pickle.load(f_data))
 
         max_word_title = Y_train.shape[1] + 1
         max_word_content = X_enc_test.shape[1]
@@ -122,10 +122,11 @@ except FileNotFoundError:
     X_data = np.array(content_sequences)
     Y_data = np.array(title_sequences)
 
-    learning_data = encoder_decoder_data_split(X_data, Y_data)
     with open(data_filename, 'wb') as f:
-        pickle.dump(learning_data, f)
-    X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test = learning_data
+        pickle.dump((X_data, Y_data), f)
+
+    X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
+        = encoder_decoder_data_split(X_data, Y_data)
 
 
 # Training Model
@@ -137,18 +138,18 @@ EPOCHS = 20
 
 
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
-    input_dim = input_tensor.shape[0]
-    dim_model = input_tensor.shape[1]
+    input_dim = input_tensor.shape[-2]
+    dim_model = input_tensor.shape[-1]
 
     pos = np.arange(input_dim)[:, np.newaxis]
     i = np.arange(dim_model)[np.newaxis, :]
     i[:, 1::2] = i[:, 1::2] - 1
 
-    encoder = pos / np.power(scale, i / np.float32(dim_model))
-    encoder[:, 0::2] = np.sin(encoder[:, 0::2])
-    encoder[:, 1::2] = np.cos(encoder[:, 1::2])
+    pos_encoder = pos / np.power(scale, i / np.float32(dim_model))
+    pos_encoder[:, 0::2] = np.sin(pos_encoder[:, 0::2])
+    pos_encoder[:, 1::2] = np.cos(pos_encoder[:, 1::2])
 
-    return input_tensor + encoder
+    return input_tensor + pos_encoder
 
 
 def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
