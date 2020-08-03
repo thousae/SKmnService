@@ -175,7 +175,7 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
 
     for i in range(NUM_HEADS):
         query_input = tf.reshape(query_separated[:, i], (len_query, -1))
-        value_input = tf.reshape(value_separated[:, i], (len_query, -1))
+        value_input = tf.reshape(value_separated[:, i], (len_value, -1))
         attention_layer = Attention(
             use_scale=True,
             name='multi_head_attention_%d' % (i + 1)
@@ -185,7 +185,7 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
             mask=[query_mask, value_mask]
         )
         output_list.append(attention_output)
-    output = tf.concat(output_list, axis=-2)
+    output = tf.concat(output_list, axis=-1)
     return output
 
 
