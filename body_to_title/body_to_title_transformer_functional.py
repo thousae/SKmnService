@@ -88,10 +88,10 @@ def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
     return x_train, x_test, y_train[:, :-1], y_test[:, :-1], y_train[:, 1:], y_test[:, 1:]
 
 
-DATA_SIZE = 5
+DATA_SIZE = 10000
 
-# data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-data_filename = 'dummy'
+data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+# data_filename = 'dummy'
 try:
     with open(data_filename, 'rb') as f_data:
         print('file found:', data_filename)
