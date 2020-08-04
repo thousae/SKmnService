@@ -121,8 +121,9 @@ except FileNotFoundError:
     X_data = np.array(content_sequences)
     Y_data = np.array(title_sequences)
 
-    with open(data_filename, 'wb') as f:
-        pickle.dump((X_data, Y_data), f)
+    if data_filename != 'dummy':
+        with open(data_filename, 'wb') as f:
+            pickle.dump((X_data, Y_data), f)
 
     X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
         = encoder_decoder_data_split(X_data, Y_data)
