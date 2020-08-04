@@ -310,7 +310,7 @@ model.compile(
     loss=MeanSquaredError()
 )
 
-model.count_params()
+print(model.count_params())
 
 history = model.fit(
     [X_enc_train, X_dec_train], Y_train,
@@ -328,7 +328,7 @@ plt.show()
 
 
 def get_initial_sequence() -> tf.Tensor:
-    text_list = ['sot'] + ['eot'] * (max_word_content - 2)
+    text_list = ['sot'] + ['eot'] * (max_word_title - 2)
     text_sequence = word_to_vector(text_list)
     return tf.constant(text_sequence)
 

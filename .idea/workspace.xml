@@ -173,7 +173,7 @@
       <workItem from="1595392838978" duration="546000" />
       <workItem from="1595393535669" duration="5241000" />
       <workItem from="1595403563092" duration="2928000" />
-      <workItem from="1596530920477" duration="832000" />
+      <workItem from="1596530920477" duration="1055000" />
     </task>
     <servers />
   </component>
@@ -205,38 +205,38 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="628" y="287" key="FileChooserDialogImpl/0.0.1680.1050@0.0.1680.1050" timestamp="1595392950632" />
-    <state width="1638" height="364" key="GridCell.Tab.0.bottom" timestamp="1596531752946">
+    <state width="1638" height="364" key="GridCell.Tab.0.bottom" timestamp="1596531942111">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752946" />
-    <state width="1638" height="364" key="GridCell.Tab.0.center" timestamp="1596531752945">
+    <state width="1638" height="364" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942111" />
+    <state width="1638" height="364" key="GridCell.Tab.0.center" timestamp="1596531942110">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752945" />
-    <state width="1638" height="364" key="GridCell.Tab.0.left" timestamp="1596531752944">
+    <state width="1638" height="364" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942110" />
+    <state width="1638" height="364" key="GridCell.Tab.0.left" timestamp="1596531942110">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752944" />
-    <state width="1638" height="364" key="GridCell.Tab.0.right" timestamp="1596531752946">
+    <state width="1638" height="364" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942110" />
+    <state width="1638" height="364" key="GridCell.Tab.0.right" timestamp="1596531942111">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752946" />
-    <state width="1638" height="364" key="GridCell.Tab.1.bottom" timestamp="1596531752948">
+    <state width="1638" height="364" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942111" />
+    <state width="1638" height="364" key="GridCell.Tab.1.bottom" timestamp="1596531942012">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752948" />
-    <state width="1638" height="364" key="GridCell.Tab.1.center" timestamp="1596531752947">
+    <state width="1638" height="364" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942012" />
+    <state width="1638" height="364" key="GridCell.Tab.1.center" timestamp="1596531942011">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752947" />
-    <state width="1638" height="364" key="GridCell.Tab.1.left" timestamp="1596531752947">
+    <state width="1638" height="364" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942011" />
+    <state width="1638" height="364" key="GridCell.Tab.1.left" timestamp="1596531942011">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752947" />
-    <state width="1638" height="364" key="GridCell.Tab.1.right" timestamp="1596531752948">
+    <state width="1638" height="364" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942011" />
+    <state width="1638" height="364" key="GridCell.Tab.1.right" timestamp="1596531942012">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596531752948" />
+    <state width="1638" height="364" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596531942012" />
     <state x="341" y="164" key="SettingsEditor" timestamp="1595392790569">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -254,9 +254,25 @@
     </state>
     <state x="570" y="434" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1595379079627" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py</url>
+          <line>252</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py</url>
+          <line>244</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SKmnService$crawling.coverage" NAME="crawling Coverage Results" MODIFIED="1594034808091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/crawling" />
     <SUITE FILE_PATH="coverage/SKmnService$preprocessing.coverage" NAME="preprocessing Coverage Results" MODIFIED="1594872435746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/util" />
-    <SUITE FILE_PATH="coverage/SKmnService$body_to_title_transformer_functional.coverage" NAME="body_to_title_transformer_functional Coverage Results" MODIFIED="1596531475429" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/body_to_title" />
+    <SUITE FILE_PATH="coverage/SKmnService$body_to_title_transformer_functional.coverage" NAME="body_to_title_transformer_functional Coverage Results" MODIFIED="1596531941965" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/body_to_title" />
   </component>
 </project>
