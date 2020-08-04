@@ -1,16 +1,14 @@
 # pandas
-from abc import ABC
-
 import pandas as pd
 
 # tensorflow
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Attention, LayerNormalization, Dense
-from tensorflow.keras.activations import relu, softmax
+from tensorflow.keras.activations import relu
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.losses import MeanSquaredError
 
 # numpy
 import numpy as np
@@ -123,25 +121,25 @@ except FileNotFoundError:
     X_data = np.array(content_sequences)
     Y_data = np.array(title_sequences)
 
-    with open(data_filename, 'wb') as f:
-        pickle.dump((X_data, Y_data), f)
+    if data_filename != 'dummy':
+        with open(data_filename, 'wb') as f:
+            pickle.dump((X_data, Y_data), f)
 
     X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
         = encoder_decoder_data_split(X_data, Y_data)
 
 
 # Training Model
-NUM_HEADS = 10
-NUM_LAYERS = 6
+NUM_HEADS = 3
+NUM_LAYERS = 1
 NUM_FF_HIDDEN = 512
 BATCH_SIZE = 1
 EPOCHS = 20
 
 # Setting
-tf.config.experimental_run_functions_eagerly(True)
+# tf.config.experimental_run_functions_eagerly(True)
 
 
-@tf.function
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     input_dim = input_tensor.shape[-2]
     dim_model = input_tensor.shape[-1]
@@ -157,38 +155,35 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
-@tf.function
 def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
     return tf.reduce_any(tf.math.not_equal(input_tensor, EOT_VEC), -1)
 
 
-@tf.function
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
                          query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
     len_query = query.shape[-2]
     len_value = value.shape[-2]
 
-    query_separated = tf.reshape(query, (BATCH_SIZE, NUM_HEADS, len_query, -1))
-    value_separated = tf.reshape(value, (BATCH_SIZE, NUM_HEADS, len_value, -1))
+    query_separated = tf.reshape(query, (BATCH_SIZE, len_query, NUM_HEADS, -1))
+    value_separated = tf.reshape(value, (BATCH_SIZE, len_value, NUM_HEADS, -1))
 
     output_list: List[tf.Tensor] = []
 
     for i in range(NUM_HEADS):
-        query_input = tf.reshape(query_separated[:, i], (len_query, -1))
-        value_input = tf.reshape(value_separated[:, i], (len_value, -1))
-        attention_layer = Attention(
-            use_scale=True
-        )
+        query_input = tf.reshape(query_separated[:, :, i], (BATCH_SIZE, len_query, -1))
+        value_input = tf.reshape(value_separated[:, :, i], (BATCH_SIZE, len_value, -1))
+
+        attention_layer = Attention(use_scale=True)
         attention_output = attention_layer(
             [query_input, value_input],
             mask=[query_mask, value_mask]
         )
         output_list.append(attention_output)
+
     output = tf.concat(output_list, axis=-1)
     return output
 
 
-@tf.function
 def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
                           epsilon: float = 1e-6) -> tf.Tensor:
     added_tensor = input_tensor + adding_tensor
@@ -197,7 +192,6 @@ def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
     return output
 
 
-@tf.function
 def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
     relu_layer = Dense(NUM_FF_HIDDEN, activation=relu)
     relu_output = relu_layer(input_tensor)
@@ -209,8 +203,9 @@ def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
 
 
 def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
-    attention_output = multi_head_attention(input_tensor, input_tensor,
-                                            query_mask=mask, value_mask=mask)
+    attention_output = multi_head_attention(
+        input_tensor, input_tensor, query_mask=mask, value_mask=mask
+    )
     output = add_and_normalization(input_tensor, attention_output)
 
     ff_output = feed_forward(output)
@@ -221,12 +216,14 @@ def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
 
 def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
                   enc_mask: tf.Tensor = None, dec_mask: tf.Tensor = None) -> tf.Tensor:
-    self_attention_output = multi_head_attention(dec_input, dec_input,
-                                                 query_mask=dec_mask, value_mask=dec_mask)
+    self_attention_output = multi_head_attention(
+        dec_input, dec_input, query_mask=dec_mask, value_mask=dec_mask
+    )
     output = add_and_normalization(dec_input, self_attention_output)
 
-    attention_output = multi_head_attention(output, enc_output,
-                                            query_mask=dec_mask, value_mask=enc_mask)
+    attention_output = multi_head_attention(
+        output, enc_output, query_mask=dec_mask, value_mask=enc_mask
+    )
     output = add_and_normalization(output, attention_output)
 
     ff_output = feed_forward(output)
@@ -267,7 +264,7 @@ encoder_input = Input(
 )
 
 decoder_input = Input(
-    shape=(max_word_title, embedding_dim),
+    shape=(max_word_title - 1, embedding_dim),
     batch_size=BATCH_SIZE,
     name='output_layer'
 )
@@ -281,14 +278,14 @@ model = Model(
 )
 
 
-class CustomSchedule(LearningRateSchedule, ABC):
-    def __init__(self, d_model, warm_up_steps=4000):
+class CustomSchedule(LearningRateSchedule):
+    def __init__(self, d_model, warm_up_steps=4000, name='transformer_custom_schedule'):
         super(CustomSchedule, self).__init__()
 
-        self.d_model = d_model
-        self.d_model = tf.cast(self.d_model, tf.float32)
-
+        self.d_model = tf.cast(d_model, tf.float32)
         self.warm_up_steps = warm_up_steps
+
+        self.name = name
 
     def __call__(self, step):
         arg1 = tf.math.rsqrt(step)
@@ -296,14 +293,25 @@ class CustomSchedule(LearningRateSchedule, ABC):
 
         return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
 
+    def get_config(self):
+        return {
+            # "initial_learning_rate": self.initial_learning_rate,
+            # "decay_steps": self.decay_steps,
+            # "decay_rate": self.decay_rate,
+            # "staircase": self.staircase,
+            "d_model": self.d_model,
+            "warm_up_steps": self.warm_up_steps,
+            "name": self.name
+        }
+
 
 learning_rate = CustomSchedule(embedding_dim)
 model.compile(
     optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-    loss=SparseCategoricalCrossentropy(from_logits=True, reduction='none')
+    loss=MeanSquaredError()
 )
 
-model.count_params()
+print(model.count_params())
 
 history = model.fit(
     [X_enc_train, X_dec_train], Y_train,
@@ -321,16 +329,16 @@ plt.show()
 
 
 def get_initial_sequence() -> tf.Tensor:
-    text_list = ['sot'] + ['eot'] * (max_word_content - 2)
+    text_list = ['sot'] + ['eot'] * (max_word_title - 2)
     text_sequence = word_to_vector(text_list)
-    return tf.constant(text_sequence)
+    return tf.constant([text_sequence])
 
 
 def predict(text: str) -> str:
     text_split = split_text(text)
     text_padded = padding(text_split, max_word_content)
     text_sequence = word_to_vector(text_padded)
-    inputs = tf.constant(text_sequence)
+    inputs = tf.constant([text_sequence], dtype=tf.float32)
 
     enc_output, enc_mask = encoder(inputs)
 
@@ -342,10 +350,13 @@ def predict(text: str) -> str:
         dec_output = decoder(dec_input, enc_output, enc_mask)
 
         idx = len(output)
-        now = word2vec.similar_by_vector(dec_output[idx].numpy())
+        vec = dec_output[0, idx].numpy()
+        now = word2vec.similar_by_vector(vec)[0][0]
         output.append(now)
 
-        dec_input[idx + 1] = dec_output[idx]
+        # dec_input[0, idx + 1] = dec_output[0, idx]
+        calculation = tf.concat([dec_input[0, :(idx + 1)], dec_output[0, idx], dec_input[0, (idx + 2):]])
+        dec_input = calculation
 
     return ' '.join(output)
 
