@@ -130,17 +130,13 @@ except FileNotFoundError:
 
 
 # Training Model
-NUM_HEADS = 3
-NUM_LAYERS = 1
-NUM_FF_HIDDEN = 512
+NUM_HEADS = 10
+NUM_LAYERS = 6
+NUM_FF_HIDDEN = 1024
 BATCH_SIZE = 1
-EPOCHS = 10
-
-# Setting
-# tf.config.experimental_run_functions_eagerly(True)
+EPOCHS = 20
 
 
-# @tf.function
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     input_dim = input_tensor.shape[-2]
     dim_model = input_tensor.shape[-1]
@@ -156,12 +152,10 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
-# @tf.function
 def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
     return tf.reduce_any(tf.math.not_equal(input_tensor, EOT_VEC), -1)
 
 
-# @tf.function
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
                          query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
     len_query = query.shape[-2]
@@ -187,7 +181,6 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
     return output
 
 
-# @tf.function
 def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
                           epsilon: float = 1e-6) -> tf.Tensor:
     added_tensor = input_tensor + adding_tensor
@@ -196,7 +189,6 @@ def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
     return output
 
 
-# @tf.function
 def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
     relu_layer = Dense(NUM_FF_HIDDEN, activation=relu)
     relu_output = relu_layer(input_tensor)
@@ -300,12 +292,6 @@ class CustomSchedule(LearningRateSchedule):
 
     def get_config(self):
         return {
-            # "initial_learning_rate": self.initial_learning_rate,
-            # "decay_steps": self.decay_steps,
-            # "decay_rate": self.decay_rate,
-            # "staircase": self.staircase,
-            # "d_model": self.d_model,
-            # "warm_up_steps": self.warm_up_steps,
             "name": self.name
         }
 
@@ -359,12 +345,11 @@ def predict(text: str) -> str:
         now = word2vec.similar_by_vector(vec)[0][0]
         output.append(now)
 
-        # dec_input[0, idx + 1] = dec_output[0, idx]
-        calculation = tf.concat(
-            [dec_input[0, :(idx + 1)], dec_output[0, idx], dec_input[0, (idx + 2):]],
-            axis=1
-        )
-        dec_input = calculation
+        dec_input = tf.concat([
+            tf.reshape(dec_input[0, :(idx + 1)], (1, -1, embedding_dim)),
+            tf.reshape(dec_output[0, idx], (1, -1, embedding_dim)),
+            tf.reshape(dec_input[0, (idx + 2):], (1, -1, embedding_dim))
+        ], axis=1)
 
     return ' '.join(output)
 
