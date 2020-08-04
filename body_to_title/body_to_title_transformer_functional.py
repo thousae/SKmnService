@@ -4,11 +4,11 @@ import pandas as pd
 # tensorflow
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Attention, LayerNormalization, Dense
-from tensorflow.keras.activations import relu, softmax
+from tensorflow.keras.activations import relu
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.losses import MeanSquaredError
 
 # numpy
 import numpy as np
@@ -208,8 +208,9 @@ def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
 
 
 def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
-    attention_output = multi_head_attention(input_tensor, input_tensor,
-                                            query_mask=mask, value_mask=mask)
+    attention_output = multi_head_attention(
+        input_tensor, input_tensor, query_mask=mask, value_mask=mask
+    )
     output = add_and_normalization(input_tensor, attention_output)
 
     ff_output = feed_forward(output)
@@ -220,12 +221,14 @@ def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
 
 def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
                   enc_mask: tf.Tensor = None, dec_mask: tf.Tensor = None) -> tf.Tensor:
-    self_attention_output = multi_head_attention(dec_input, dec_input,
-                                                 query_mask=dec_mask, value_mask=dec_mask)
+    self_attention_output = multi_head_attention(
+        dec_input, dec_input, query_mask=dec_mask, value_mask=dec_mask
+    )
     output = add_and_normalization(dec_input, self_attention_output)
 
-    attention_output = multi_head_attention(output, enc_output,
-                                            query_mask=dec_mask, value_mask=enc_mask)
+    attention_output = multi_head_attention(
+        output, enc_output, query_mask=dec_mask, value_mask=enc_mask
+    )
     output = add_and_normalization(output, attention_output)
 
     ff_output = feed_forward(output)
@@ -304,7 +307,7 @@ class CustomSchedule(LearningRateSchedule):
 learning_rate = CustomSchedule(embedding_dim)
 model.compile(
     optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-    loss=SparseCategoricalCrossentropy(from_logits=True, reduction='none')
+    loss=MeanSquaredError()
 )
 
 model.count_params()
