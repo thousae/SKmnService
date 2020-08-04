@@ -265,7 +265,7 @@ encoder_input = Input(
 )
 
 decoder_input = Input(
-    shape=(max_word_title, embedding_dim),
+    shape=(max_word_title - 1, embedding_dim),
     batch_size=BATCH_SIZE,
     name='output_layer'
 )
