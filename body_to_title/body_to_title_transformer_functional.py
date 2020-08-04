@@ -187,16 +187,16 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
 def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
                           epsilon: float = 1e-6) -> tf.Tensor:
     added_tensor = input_tensor + adding_tensor
-    norm_layer = LayerNormalization(epsilon=epsilon)
+    norm_layer = LayerNormalization(epsilon=epsilon, name='normalization_layer')
     output = norm_layer(added_tensor)
     return output
 
 
 def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
-    relu_layer = Dense(NUM_FF_HIDDEN, activation=relu)
+    relu_layer = Dense(NUM_FF_HIDDEN, activation=relu, name='feed_forward_layer_1')
     relu_output = relu_layer(input_tensor)
 
-    output_layer = Dense(embedding_dim)
+    output_layer = Dense(embedding_dim, name='feed_forward_layer_2')
     output = output_layer(relu_output)
 
     return output
@@ -235,7 +235,7 @@ def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
 def encoder(input_tensor: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
     mask = create_padding_mask(input_tensor)
     output = positional_encoding(input_tensor)
-    for i in range(NUM_LAYERS):
+    for _ in range(NUM_LAYERS):
         output = encoder_layer(output, mask)
     return output, mask
 
@@ -243,7 +243,7 @@ def encoder(input_tensor: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
 def decoder(dec_input: tf.Tensor, enc_output: tf.Tensor, enc_mask: tf.Tensor) -> tf.Tensor:
     dec_mask = create_padding_mask(dec_input)
     output = positional_encoding(dec_input)
-    for i in range(NUM_LAYERS):
+    for _ in range(NUM_LAYERS):
         output = decoder_layer(output, enc_output, enc_mask=enc_mask, dec_mask=dec_mask)
     return output
 
