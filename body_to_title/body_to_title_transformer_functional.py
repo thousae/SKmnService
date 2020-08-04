@@ -134,13 +134,13 @@ NUM_HEADS = 3
 NUM_LAYERS = 1
 NUM_FF_HIDDEN = 512
 BATCH_SIZE = 1
-EPOCHS = 20
+EPOCHS = 10
 
 # Setting
-tf.config.experimental_run_functions_eagerly(True)
+# tf.config.experimental_run_functions_eagerly(True)
 
 
-@tf.function
+# @tf.function
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     input_dim = input_tensor.shape[-2]
     dim_model = input_tensor.shape[-1]
@@ -156,12 +156,12 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
-@tf.function
+# @tf.function
 def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
     return tf.reduce_any(tf.math.not_equal(input_tensor, EOT_VEC), -1)
 
 
-@tf.function
+# @tf.function
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
                          query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
     len_query = query.shape[-2]
@@ -187,7 +187,7 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
     return output
 
 
-@tf.function
+# @tf.function
 def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
                           epsilon: float = 1e-6) -> tf.Tensor:
     added_tensor = input_tensor + adding_tensor
@@ -196,7 +196,7 @@ def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
     return output
 
 
-@tf.function
+# @tf.function
 def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
     relu_layer = Dense(NUM_FF_HIDDEN, activation=relu)
     relu_output = relu_layer(input_tensor)
@@ -304,8 +304,8 @@ class CustomSchedule(LearningRateSchedule):
             # "decay_steps": self.decay_steps,
             # "decay_rate": self.decay_rate,
             # "staircase": self.staircase,
-            "d_model": self.d_model,
-            "warm_up_steps": self.warm_up_steps,
+            # "d_model": self.d_model,
+            # "warm_up_steps": self.warm_up_steps,
             "name": self.name
         }
 
