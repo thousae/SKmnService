@@ -22,8 +22,6 @@
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/body_to_title/history.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/history.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/body_to_title/transformer_model.h5" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/transformer_model.h5" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +171,7 @@
       <workItem from="1595392838978" duration="546000" />
       <workItem from="1595393535669" duration="5241000" />
       <workItem from="1595403563092" duration="2928000" />
-      <workItem from="1596530920477" duration="3284000" />
+      <workItem from="1596530920477" duration="3909000" />
     </task>
     <servers />
   </component>
