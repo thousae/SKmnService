@@ -130,8 +130,8 @@ except FileNotFoundError:
 
 
 # Training Model
-NUM_HEADS = 10
-NUM_LAYERS = 6
+NUM_HEADS = 3
+NUM_LAYERS = 1
 NUM_FF_HIDDEN = 512
 BATCH_SIZE = 1
 EPOCHS = 20
@@ -167,22 +167,22 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
     len_query = query.shape[-2]
     len_value = value.shape[-2]
 
-    query_separated = tf.reshape(query, (BATCH_SIZE, NUM_HEADS, len_query, -1))
-    value_separated = tf.reshape(value, (BATCH_SIZE, NUM_HEADS, len_value, -1))
+    query_separated = tf.reshape(query, (BATCH_SIZE, len_query, NUM_HEADS, -1))
+    value_separated = tf.reshape(value, (BATCH_SIZE, len_value, NUM_HEADS, -1))
 
     output_list: List[tf.Tensor] = []
 
     for i in range(NUM_HEADS):
-        query_input = tf.reshape(query_separated[:, i], (len_query, -1))
-        value_input = tf.reshape(value_separated[:, i], (len_value, -1))
-        attention_layer = Attention(
-            use_scale=True
-        )
+        query_input = tf.reshape(query_separated[:, :, i], (BATCH_SIZE, len_query, -1))
+        value_input = tf.reshape(value_separated[:, :, i], (BATCH_SIZE, len_value, -1))
+
+        attention_layer = Attention(use_scale=True)
         attention_output = attention_layer(
             [query_input, value_input],
             mask=[query_mask, value_mask]
         )
         output_list.append(attention_output)
+
     output = tf.concat(output_list, axis=-1)
     return output
 
@@ -284,11 +284,13 @@ model = Model(
 
 
 class CustomSchedule(LearningRateSchedule):
-    def __init__(self, d_model, warm_up_steps=4000):
+    def __init__(self, d_model, warm_up_steps=4000, name='transformer_custom_schedule'):
         super(CustomSchedule, self).__init__()
 
         self.d_model = tf.cast(d_model, tf.float32)
         self.warm_up_steps = warm_up_steps
+
+        self.name = name
 
     def __call__(self, step):
         arg1 = tf.math.rsqrt(step)
@@ -298,9 +300,13 @@ class CustomSchedule(LearningRateSchedule):
 
     def get_config(self):
         return {
+            # "initial_learning_rate": self.initial_learning_rate,
+            # "decay_steps": self.decay_steps,
+            # "decay_rate": self.decay_rate,
+            # "staircase": self.staircase,
             "d_model": self.d_model,
             "warm_up_steps": self.warm_up_steps,
-            "name": 'transformer_custom_schedule'
+            "name": self.name
         }
 
 
@@ -330,14 +336,14 @@ plt.show()
 def get_initial_sequence() -> tf.Tensor:
     text_list = ['sot'] + ['eot'] * (max_word_title - 2)
     text_sequence = word_to_vector(text_list)
-    return tf.constant(text_sequence)
+    return tf.constant([text_sequence])
 
 
 def predict(text: str) -> str:
     text_split = split_text(text)
     text_padded = padding(text_split, max_word_content)
     text_sequence = word_to_vector(text_padded)
-    inputs = tf.constant(text_sequence)
+    inputs = tf.constant([text_sequence], dtype=tf.float32)
 
     enc_output, enc_mask = encoder(inputs)
 
@@ -349,10 +355,13 @@ def predict(text: str) -> str:
         dec_output = decoder(dec_input, enc_output, enc_mask)
 
         idx = len(output)
-        now = word2vec.similar_by_vector(dec_output[idx].numpy())
+        vec = dec_output[0, idx].numpy()
+        now = word2vec.similar_by_vector(vec)[0][0]
         output.append(now)
 
-        dec_input[idx + 1] = dec_output[idx]
+        # dec_input[0, idx + 1] = dec_output[0, idx]
+        calculation = tf.concat([dec_input[0, :(idx + 1)], dec_output[0, idx], dec_input[0, (idx + 2):]])
+        dec_input = calculation
 
     return ' '.join(output)
 
