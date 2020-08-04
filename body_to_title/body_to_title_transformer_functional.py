@@ -360,7 +360,10 @@ def predict(text: str) -> str:
         output.append(now)
 
         # dec_input[0, idx + 1] = dec_output[0, idx]
-        calculation = tf.concat([dec_input[0, :(idx + 1)], dec_output[0, idx], dec_input[0, (idx + 2):]])
+        calculation = tf.concat(
+            [dec_input[0, :(idx + 1)], dec_output[0, idx], dec_input[0, (idx + 2):]],
+            axis=1
+        )
         dec_input = calculation
 
     return ' '.join(output)

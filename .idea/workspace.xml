@@ -20,7 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/body_to_title/history.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/history.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/body_to_title/transformer_model.h5" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/transformer_model.h5" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -170,7 +173,7 @@
       <workItem from="1595392838978" duration="546000" />
       <workItem from="1595393535669" duration="5241000" />
       <workItem from="1595403563092" duration="2928000" />
-      <workItem from="1596530920477" duration="2007000" />
+      <workItem from="1596530920477" duration="2411000" />
     </task>
     <servers />
   </component>
@@ -202,38 +205,38 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="628" y="287" key="FileChooserDialogImpl/0.0.1680.1050@0.0.1680.1050" timestamp="1595392950632" />
-    <state width="1638" height="364" key="GridCell.Tab.0.bottom" timestamp="1596532924112">
+    <state width="1638" height="364" key="GridCell.Tab.0.bottom" timestamp="1596533322656">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596532924112" />
-    <state width="1638" height="364" key="GridCell.Tab.0.center" timestamp="1596532924111">
+    <state width="1638" height="364" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322656" />
+    <state width="1638" height="364" key="GridCell.Tab.0.center" timestamp="1596533322655">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596532924111" />
-    <state width="1638" height="364" key="GridCell.Tab.0.left" timestamp="1596532924111">
+    <state width="1638" height="364" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322655" />
+    <state width="1638" height="364" key="GridCell.Tab.0.left" timestamp="1596533322654">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596532924111" />
-    <state width="1638" height="364" key="GridCell.Tab.0.right" timestamp="1596532924112">
+    <state width="1638" height="364" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322654" />
+    <state width="1638" height="364" key="GridCell.Tab.0.right" timestamp="1596533322655">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596532924112" />
-    <state width="1638" height="364" key="GridCell.Tab.1.bottom" timestamp="1596532923985">
+    <state width="1638" height="364" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322655" />
+    <state width="1638" height="364" key="GridCell.Tab.1.bottom" timestamp="1596533322658">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596532923985" />
-    <state width="1638" height="364" key="GridCell.Tab.1.center" timestamp="1596532923983">
+    <state width="1638" height="364" key="GridCell.Tab.1.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322658" />
+    <state width="1638" height="364" key="GridCell.Tab.1.center" timestamp="1596533322657">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596532923983" />
-    <state width="1638" height="364" key="GridCell.Tab.1.left" timestamp="1596532923983">
+    <state width="1638" height="364" key="GridCell.Tab.1.center/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322657" />
+    <state width="1638" height="364" key="GridCell.Tab.1.left" timestamp="1596533322656">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596532923983" />
-    <state width="1638" height="364" key="GridCell.Tab.1.right" timestamp="1596532923984">
+    <state width="1638" height="364" key="GridCell.Tab.1.left/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322656" />
+    <state width="1638" height="364" key="GridCell.Tab.1.right" timestamp="1596533322657">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="364" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596532923984" />
+    <state width="1638" height="364" key="GridCell.Tab.1.right/0.0.1680.1050@0.0.1680.1050" timestamp="1596533322657" />
     <state x="341" y="164" key="SettingsEditor" timestamp="1595392790569">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
@@ -251,25 +254,9 @@
     </state>
     <state x="570" y="434" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1595379079627" />
   </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py</url>
-          <line>327</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py</url>
-          <line>329</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SKmnService$crawling.coverage" NAME="crawling Coverage Results" MODIFIED="1594034808091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/crawling" />
     <SUITE FILE_PATH="coverage/SKmnService$preprocessing.coverage" NAME="preprocessing Coverage Results" MODIFIED="1594872435746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/util" />
-    <SUITE FILE_PATH="coverage/SKmnService$body_to_title_transformer_functional.coverage" NAME="body_to_title_transformer_functional Coverage Results" MODIFIED="1596532923918" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/body_to_title" />
+    <SUITE FILE_PATH="coverage/SKmnService$body_to_title_transformer_functional.coverage" NAME="body_to_title_transformer_functional Coverage Results" MODIFIED="1596533135619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/body_to_title" />
   </component>
 </project>
