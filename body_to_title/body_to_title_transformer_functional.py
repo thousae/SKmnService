@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # typing
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 # math
 from math import sqrt
@@ -68,29 +68,33 @@ def split_text(text: str) -> List[str]:
         return sum([word_tokenize(sentence) for sentence in sentences], [])
 
 
-def get_word2vec(filepath: str):
-    w2v = KeyedVectors.load_word2vec_format(filepath, binary=True)
-    v_size = w2v['hello'].shape[0]
-
-    sov = w2v['sot']
-    eot = np.ones(v_size)
-    oov = np.zeros(v_size)
-
-    w2v.add(['eot'], [eot])
-
-    return w2v, sov, eot, oov, v_size
+def padding(word_list: List[str], max_len: int) -> List[str]:
+    return word_list + ['eot'] * (max_len - len(word_list))
 
 
-word2vec, SOV_VEC, EOT_VEC, OOV_VEC, vector_size = get_word2vec("../../GoogleNews-vectors-negative300.bin")
+class Word2Vec:
+    def __init__(self, filepath: str = "../../GoogleNews-vectors-negative300.bin"):
+        self.vec = KeyedVectors.load_word2vec_format(filepath, binary=True)
+        self.size = self.vec.vector_size
+
+        self.SOT_VEC = self.vec['sot']
+        self.EOT_VEC = tf.ones(self.size)
+        self.OOV_VEC = tf.zeros(self.size)
+
+        self.vec.add(['eot'], [self.EOT_VEC])
+
+    def __getitem__(self, item: str):
+        return self.vec[item] if item in self.vec else self.OOV_VEC
+
+    def vector_to_word(self, vector: Union[np.ndarray, tf.Tensor]) -> str:
+        return self.vec.similar_by_vector(vector)[0][0]
+
+
+word2vec = Word2Vec()
 
 
 def word_to_vector(word_list: List[str]) -> np.ndarray:
-    return np.array([word2vec[word] if word in word2vec else OOV_VEC
-                     for word in word_list])
-
-
-def padding(word_list: List[str], max_len: int) -> List[str]:
-    return word_list + ['eot'] * (max_len - len(word_list))
+    return np.array([word2vec[word] for word in word_list])
 
 
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
@@ -108,8 +112,8 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
-def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
-    return tf.reduce_any(tf.math.not_equal(input_tensor, EOT_VEC), -1)
+def create_padding_mask(input_tensor: tf.Tensor, target: np.ndarray) -> tf.Tensor:
+    return tf.reduce_any(tf.math.not_equal(input_tensor, target), -1)
 
 
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
@@ -228,7 +232,8 @@ class Decoder:
 
 class Transformer(Model):
     def __init__(self, num_layers: int, num_ff_hidden: int,
-                 input_shape: Tuple[int, int], output_shape: Tuple[int, int]):
+                 input_shape: Tuple[int, int], output_shape: Tuple[int, int],
+                 batch_size: int = None):
         self.num_layers = num_layers
         self.num_ff_hidden = num_ff_hidden
 
@@ -243,13 +248,13 @@ class Transformer(Model):
 
         encoder_input = Input(
             shape=(self.len_input, self.embedding_dim),
-            batch_size=BATCH_SIZE,
+            batch_size=batch_size,
             name='input_layer'
         )
 
         decoder_input = Input(
             shape=(self.len_output - 1, self.embedding_dim),
-            batch_size=BATCH_SIZE,
+            batch_size=batch_size,
             name='output_layer'
         )
 
@@ -318,7 +323,7 @@ class Transformer(Model):
     def __get_initial_sequence(self) -> tf.Tensor:
         text_list = ['sot'] + ['eot'] * (self.len_output - 2)
         text_sequence = word_to_vector(text_list)
-        return tf.constant([text_sequence])
+        return tf.constant(text_sequence)
 
     def predict(self, text: str, *args, **kwargs) -> str:
         text_split = split_text(text)
@@ -337,7 +342,7 @@ class Transformer(Model):
 
             idx = len(output)
             vec = dec_output[0, idx].numpy()
-            now = word2vec.similar_by_vector(vec)[0][0]
+            now = word2vec.vector_to_word(vec)[0][0]
             output.append(now)
 
             dec_input = tf.concat([
@@ -396,8 +401,8 @@ if __name__ == '__main__':
 
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
-        input_shape=(max_word_content, vector_size),
-        output_shape=(max_word_title, vector_size)
+        input_shape=(max_word_content, word2vec.size),
+        output_shape=(max_word_title, word2vec.size)
     )
 
     model.compile()
