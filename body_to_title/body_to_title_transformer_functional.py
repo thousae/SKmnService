@@ -6,9 +6,9 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Attention, LayerNormalization, Dense
 from tensorflow.keras.activations import relu
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Optimizer, Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
-from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.losses import Loss, MeanSquaredError
 
 # numpy
 import numpy as np
@@ -24,6 +24,9 @@ import matplotlib.pyplot as plt
 
 # typing
 from typing import List, Tuple
+
+# math
+from math import sqrt
 
 # utils
 from nltk import word_tokenize, sent_tokenize
@@ -65,14 +68,22 @@ def split_text(text: str) -> List[str]:
         return sum([word_tokenize(sentence) for sentence in sentences], [])
 
 
-word2vec = KeyedVectors.load_word2vec_format("../../GoogleNews-vectors-negative300.bin", binary=True)
-embedding_dim = word2vec['hello'].shape[0]
+def get_word2vec(filepath: str):
+    w2v = KeyedVectors.load_word2vec_format(filepath, binary=True)
+    v_size = w2v['hello'].shape[0]
 
-SOT_VEC = word2vec['sot']
-EOT_VEC = np.ones(embedding_dim)
-OOV_VEC = np.zeros(embedding_dim)
+    sov = w2v['sot']
+    eot = np.ones(v_size)
+    oov = np.zeros(v_size)
 
-word2vec.add(['eot'], [EOT_VEC])
+    w2v.add(['eot'], [eot])
+
+    return w2v, sov, eot, oov, v_size
+
+
+word2vec, SOV_VEC, EOT_VEC, OOV_VEC, vector_size = get_word2vec("../../GoogleNews-vectors-negative300.bin")
+
+
 def word_to_vector(word_list: List[str]) -> np.ndarray:
     return np.array([word2vec[word] if word in word2vec else OOV_VEC
                      for word in word_list])
@@ -80,61 +91,6 @@ def word_to_vector(word_list: List[str]) -> np.ndarray:
 
 def padding(word_list: List[str], max_len: int) -> List[str]:
     return word_list + ['eot'] * (max_len - len(word_list))
-
-
-def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
-        -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data)
-    return x_train, x_test, y_train[:, :-1], y_test[:, :-1], y_train[:, 1:], y_test[:, 1:]
-
-
-DATA_SIZE = 10000
-
-data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-# data_filename = 'dummy'
-try:
-    with open(data_filename, 'rb') as f_data:
-        print('file found:', data_filename)
-
-        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
-            = encoder_decoder_data_split(*pickle.load(f_data))
-
-        max_word_title = Y_train.shape[1] + 1
-        max_word_content = X_enc_test.shape[1]
-except FileNotFoundError:
-    # Import Data
-    titles, contents = get_data(DATA_SIZE, content='summary')
-
-    # Pre-Processing
-    title_split = [split_text(title) for title in titles]
-    content_split = [split_text(content) for content in contents]
-
-    max_word_title = max([len(title) for title in title_split])
-    max_word_content = max([len(content) for content in content_split])
-
-    title_padded = [padding(title, max_word_title) for title in title_split]
-    content_padded = [padding(content, max_word_content) for content in content_split]
-
-    title_sequences = [word_to_vector(title) for title in title_padded]
-    content_sequences = [word_to_vector(content) for content in content_padded]
-
-    X_data = np.array(content_sequences)
-    Y_data = np.array(title_sequences)
-
-    if data_filename != 'dummy':
-        with open(data_filename, 'wb') as f:
-            pickle.dump((X_data, Y_data), f)
-
-    X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
-        = encoder_decoder_data_split(X_data, Y_data)
-
-
-# Training Model
-NUM_HEADS = 10
-NUM_LAYERS = 6
-NUM_FF_HIDDEN = 1024
-BATCH_SIZE = 1
-EPOCHS = 20
 
 
 def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
@@ -158,17 +114,26 @@ def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
 
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
                          query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
+    batch_size = query.shape[0]
+
     len_query = query.shape[-2]
     len_value = value.shape[-2]
 
-    query_separated = tf.reshape(query, (BATCH_SIZE, len_query, NUM_HEADS, -1))
-    value_separated = tf.reshape(value, (BATCH_SIZE, len_value, NUM_HEADS, -1))
+    embedding_dim = query.shape[-1]
+    num_heads = int(sqrt(embedding_dim))
+    while num_heads > 1:
+        if embedding_dim % num_heads == 0:
+            break
+        num_heads -= 1
+
+    query_separated = tf.reshape(query, (batch_size, len_query, num_heads, -1))
+    value_separated = tf.reshape(value, (batch_size, len_value, num_heads, -1))
 
     output_list: List[tf.Tensor] = []
 
-    for i in range(NUM_HEADS):
-        query_input = tf.reshape(query_separated[:, :, i], (BATCH_SIZE, len_query, -1))
-        value_input = tf.reshape(value_separated[:, :, i], (BATCH_SIZE, len_value, -1))
+    for i in range(num_heads):
+        query_input = tf.reshape(query_separated[:, :, i], (batch_size, len_query, -1))
+        value_input = tf.reshape(value_separated[:, :, i], (batch_size, len_value, -1))
 
         attention_layer = Attention(use_scale=True)
         attention_output = attention_layer(
@@ -189,8 +154,10 @@ def add_and_normalization(input_tensor: tf.Tensor, adding_tensor: tf.Tensor,
     return output
 
 
-def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
-    relu_layer = Dense(NUM_FF_HIDDEN, activation=relu)
+def feed_forward(input_tensor: tf.Tensor, num_hidden: int) -> tf.Tensor:
+    embedding_dim = input_tensor.shape[-1]
+
+    relu_layer = Dense(num_hidden, activation=relu)
     relu_output = relu_layer(input_tensor)
 
     output_layer = Dense(embedding_dim)
@@ -199,19 +166,20 @@ def feed_forward(input_tensor: tf.Tensor) -> tf.Tensor:
     return output
 
 
-def encoder_layer(input_tensor: tf.Tensor, mask: tf.Tensor = None) -> tf.Tensor:
+def encoder_layer(input_tensor: tf.Tensor, num_ff_hidden: int,
+                  mask: tf.Tensor = None) -> tf.Tensor:
     attention_output = multi_head_attention(
         input_tensor, input_tensor, query_mask=mask, value_mask=mask
     )
     output = add_and_normalization(input_tensor, attention_output)
 
-    ff_output = feed_forward(output)
+    ff_output = feed_forward(output, num_ff_hidden)
     output = add_and_normalization(output, ff_output)
 
     return output
 
 
-def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
+def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor, num_ff_hidden: int,
                   enc_mask: tf.Tensor = None, dec_mask: tf.Tensor = None) -> tf.Tensor:
     self_attention_output = multi_head_attention(
         dec_input, dec_input, query_mask=dec_mask, value_mask=dec_mask
@@ -223,143 +191,239 @@ def decoder_layer(dec_input: tf.Tensor, enc_output: tf.Tensor,
     )
     output = add_and_normalization(output, attention_output)
 
-    ff_output = feed_forward(output)
+    ff_output = feed_forward(output, num_ff_hidden)
     output = add_and_normalization(output, ff_output)
 
     return output
 
 
-def encoder(input_tensor: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
-    mask = create_padding_mask(input_tensor)
-    output = positional_encoding(input_tensor)
-    for i in range(NUM_LAYERS):
-        output = encoder_layer(output, mask)
-    return output, mask
+class Encoder:
+    def __init__(self, num_layers: int, num_ff_hidden: int):
+        self.num_layers = num_layers
+        self.num_ff_hidden = num_ff_hidden
+
+    def __call__(self, input_tensor: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+        mask = create_padding_mask(input_tensor)
+        output = positional_encoding(input_tensor)
+        for i in range(self.num_layers):
+            output = encoder_layer(output, self.num_ff_hidden, mask)
+        return output, mask
 
 
-def decoder(dec_input: tf.Tensor, enc_output: tf.Tensor, enc_mask: tf.Tensor) -> tf.Tensor:
-    dec_mask = create_padding_mask(dec_input)
-    output = positional_encoding(dec_input)
-    for i in range(NUM_LAYERS):
-        output = decoder_layer(output, enc_output, enc_mask=enc_mask, dec_mask=dec_mask)
-    return output
+class Decoder:
+    def __init__(self, num_layers: int, num_ff_hidden: int):
+        self.num_layers = num_layers
+        self.num_ff_hidden = num_ff_hidden
+
+    def __call__(self, dec_input: tf.Tensor, enc_output: tf.Tensor,
+                 enc_mask: tf.Tensor) -> tf.Tensor:
+        dec_mask = create_padding_mask(dec_input)
+        output = positional_encoding(dec_input)
+        for i in range(self.num_layers):
+            output = decoder_layer(
+                output, enc_output, self.num_ff_hidden, enc_mask=enc_mask, dec_mask=dec_mask
+            )
+        return output
 
 
-def transformer(enc_input: tf.Tensor, dec_input: tf.Tensor) -> tf.Tensor:
-    encoder_output, enc_mask = encoder(enc_input)
-    decoder_output = decoder(dec_input, encoder_output, enc_mask)
+class Transformer(Model):
+    def __init__(self, num_layers: int, num_ff_hidden: int,
+                 input_shape: Tuple[int, int], output_shape: Tuple[int, int]):
+        self.num_layers = num_layers
+        self.num_ff_hidden = num_ff_hidden
 
-    final_layer = Dense(embedding_dim)
-    output = final_layer(decoder_output)
-    return output
+        self.len_input = input_shape[-2]
+        self.len_output = output_shape[-2]
+        self.embedding_dim = input_shape[-1]
+        if self.embedding_dim != output_shape[-1]:
+            assert 'input embedding dimension and output embedding dimension must be same'
+
+        self.encoder = Encoder(self.num_layers, self.num_ff_hidden)
+        self.decoder = Decoder(self.num_layers, self.num_ff_hidden)
+
+        encoder_input = Input(
+            shape=(self.len_input, self.embedding_dim),
+            batch_size=BATCH_SIZE,
+            name='input_layer'
+        )
+
+        decoder_input = Input(
+            shape=(self.len_output - 1, self.embedding_dim),
+            batch_size=BATCH_SIZE,
+            name='output_layer'
+        )
+
+        output = self.execute(encoder_input, decoder_input)
+
+        super().__init__(
+            inputs=[encoder_input, decoder_input],
+            outputs=output,
+            name='transformer_functional_model'
+        )
+
+    def execute(self, enc_input: tf.Tensor, dec_input: tf.Tensor) -> tf.Tensor:
+        encoder_output, enc_mask = self.encoder(enc_input)
+        decoder_output = self.decoder(dec_input, encoder_output, enc_mask)
+
+        final_layer = Dense(self.embedding_dim)
+        output = final_layer(decoder_output)
+        return output
+
+    class CustomSchedule(LearningRateSchedule):
+        def __init__(self, d_model, warm_up_steps=4000, name='transformer_custom_schedule'):
+            super(Transformer.CustomSchedule, self).__init__()
+
+            self.d_model = tf.cast(d_model, tf.float32)
+            self.warm_up_steps = warm_up_steps
+
+            self.name = name
+
+        def __call__(self, step):
+            arg1 = tf.math.rsqrt(step)
+            arg2 = step * (self.warm_up_steps ** -1.5)
+
+            return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
+
+        def get_config(self):
+            return {
+                "name": self.name
+            }
+
+    def compile(self, optimizer: Optimizer = None, loss: Loss = None, **kwargs):
+        if optimizer is None:
+            learning_rate = Transformer.CustomSchedule(self.embedding_dim)
+            optimizer = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
+        if loss is None:
+            loss = MeanSquaredError()
+        super().compile(optimizer=optimizer, loss=loss, **kwargs)
+
+    @staticmethod
+    def __encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
+            -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return x_data, y_data[:, :-1], y_data[:, 1:]
+
+    def fit(self, x: np.ndarray = None, y: np.ndarray = None,
+            batch_size: int = None, epochs: int = 1, validation_data: Tuple[np.ndarray, np.ndarray] = None,
+            **kwargs):
+        x_test, y_test = validation_data
+        x_enc_train, x_dec_train, y_train = Transformer.__encoder_decoder_data_split(x, y)
+        x_enc_test, x_dec_test, y_test = Transformer.__encoder_decoder_data_split(x_test, y_test)
+        return super().fit(
+            [x_enc_train, x_dec_train], y_train,
+            batch_size, epochs,
+            validation_data=([x_enc_test, x_dec_test], y_test),
+            **kwargs
+        )
+
+    def __get_initial_sequence(self) -> tf.Tensor:
+        text_list = ['sot'] + ['eot'] * (self.len_output - 2)
+        text_sequence = word_to_vector(text_list)
+        return tf.constant([text_sequence])
+
+    def predict(self, text: str, *args, **kwargs) -> str:
+        text_split = split_text(text)
+        text_padded = padding(text_split, self.len_input)
+        text_sequence = word_to_vector(text_padded)
+        inputs = tf.constant([text_sequence], dtype=tf.float32)
+
+        enc_output, enc_mask = self.encoder(inputs)
+
+        now = 'sot'
+        dec_input = self.__get_initial_sequence()
+        output: List[str] = []
+        idx = 0
+        while now != 'eot' and idx < self.len_output:
+            dec_output = self.decoder(dec_input, enc_output, enc_mask)
+
+            idx = len(output)
+            vec = dec_output[0, idx].numpy()
+            now = word2vec.similar_by_vector(vec)[0][0]
+            output.append(now)
+
+            dec_input = tf.concat([
+                tf.reshape(dec_input[0, :(idx + 1)], (1, -1, self.embedding_dim)),
+                tf.reshape(dec_output[0, idx], (1, -1, self.embedding_dim)),
+                tf.reshape(dec_input[0, (idx + 2):], (1, -1, self.embedding_dim))
+            ], axis=1)
+
+        return ' '.join(output)
 
 
-encoder_input = Input(
-    shape=(max_word_content, embedding_dim),
-    batch_size=BATCH_SIZE,
-    name='input_layer'
-)
+if __name__ == '__main__':
+    DATA_SIZE = 5
 
-decoder_input = Input(
-    shape=(max_word_title - 1, embedding_dim),
-    batch_size=BATCH_SIZE,
-    name='output_layer'
-)
+    data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+    # data_filename = 'dummy'
+    try:
+        with open(data_filename, 'rb') as f_data:
+            print('file found:', data_filename)
 
-transformer_training_output = transformer(encoder_input, decoder_input)
+            X_train, X_test, Y_train, Y_test = train_test_split(*pickle.load(f_data))
 
-model = Model(
-    inputs=[encoder_input, decoder_input],
-    outputs=transformer_training_output,
-    name='transformer_functional_model'
-)
+            max_word_title = Y_train.shape[1]
+            max_word_content = X_train.shape[1]
+    except FileNotFoundError:
+        # Import Data
+        titles, contents = get_data(DATA_SIZE, content='summary')
 
+        # Pre-Processing
+        title_split = [split_text(title) for title in titles]
+        content_split = [split_text(content) for content in contents]
 
-class CustomSchedule(LearningRateSchedule):
-    def __init__(self, d_model, warm_up_steps=4000, name='transformer_custom_schedule'):
-        super(CustomSchedule, self).__init__()
+        max_word_title = max([len(title) for title in title_split])
+        max_word_content = max([len(content) for content in content_split])
 
-        self.d_model = tf.cast(d_model, tf.float32)
-        self.warm_up_steps = warm_up_steps
+        title_padded = [padding(title, max_word_title) for title in title_split]
+        content_padded = [padding(content, max_word_content) for content in content_split]
 
-        self.name = name
+        title_sequences = [word_to_vector(title) for title in title_padded]
+        content_sequences = [word_to_vector(content) for content in content_padded]
 
-    def __call__(self, step):
-        arg1 = tf.math.rsqrt(step)
-        arg2 = step * (self.warm_up_steps ** -1.5)
+        X_data = np.array(content_sequences)
+        Y_data = np.array(title_sequences)
 
-        return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
+        if data_filename != 'dummy':
+            with open(data_filename, 'wb') as f:
+                pickle.dump((X_data, Y_data), f)
 
-    def get_config(self):
-        return {
-            "name": self.name
-        }
+        X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data)
 
+    # Training Model
+    NUM_LAYERS = 1
+    NUM_FF_HIDDEN = 512
+    BATCH_SIZE = 1
+    EPOCHS = 10
 
-learning_rate = CustomSchedule(embedding_dim)
-model.compile(
-    optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-    loss=MeanSquaredError()
-)
+    model = Transformer(
+        NUM_LAYERS, NUM_FF_HIDDEN,
+        input_shape=(max_word_content, vector_size),
+        output_shape=(max_word_title, vector_size)
+    )
 
-print(model.count_params())
+    model.compile()
 
-history = model.fit(
-    [X_enc_train, X_dec_train], Y_train,
-    epochs=EPOCHS, batch_size=BATCH_SIZE,
-    validation_data=([X_enc_test, X_dec_test], Y_test),
-)
-with open('history.pickle', 'wb') as f_history:
-    pickle.dump(history.history, f_history)
-model.save('transformer_model.h5')
+    print(model.count_params())
 
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='test')
-plt.legend()
-plt.show()
+    history = model.fit(
+        X_train, Y_train,
+        epochs=EPOCHS, batch_size=BATCH_SIZE,
+        validation_data=(X_test, Y_test)
+    )
+    with open('history.pickle', 'wb') as f_history:
+        pickle.dump(history.history, f_history)
+    model.save('transformer_model.h5')
 
+    plt.plot(history.history['loss'], label='train')
+    plt.plot(history.history['val_loss'], label='test')
+    plt.legend()
+    plt.show()
 
-def get_initial_sequence() -> tf.Tensor:
-    text_list = ['sot'] + ['eot'] * (max_word_title - 2)
-    text_sequence = word_to_vector(text_list)
-    return tf.constant([text_sequence])
+    TEST_CONTENT = r'''"The incoming Trump administration could choose to no longer defend the executive branch against the suit, which challenges the administration’s authority to spend billions of dollars on health insurance subsidies for   and   Americans, handing House Republicans a big victory on    issues.
+    Collyer ruled that House Republicans had the standing to sue the executive branch over a spending dispute and that the Obama administration had been distributing the health insurance subsidies, in violation of the Constitution, without approval from Congress.
+    Anticipating that the Trump administration might not be inclined to mount a vigorous fight against the House Republicans given the  ’s dim view of the health care law, a team of lawyers this month sought to intervene in the case on behalf of two participants in the health care program.
+    ” No matter what happens, House Republicans say, they want to prevail on two overarching concepts: the congressional power of the purse, and the right of Congress to sue the executive branch if it violates the Constitution regarding that spending power.
+    Just as important to House Republicans, Judge Collyer found that Congress had the standing to sue the White House on this issue  —   a ruling that many legal experts said was flawed  —   and they want that precedent to be set to restore congressional leverage over the executive branch.
+    But on spending power and standing, the Trump administration may come under pressure from advocates of presidential authority to fight the House no matter their shared views on health care, since those precedents could have broad repercussions."'''
 
-
-def predict(text: str) -> str:
-    text_split = split_text(text)
-    text_padded = padding(text_split, max_word_content)
-    text_sequence = word_to_vector(text_padded)
-    inputs = tf.constant([text_sequence], dtype=tf.float32)
-
-    enc_output, enc_mask = encoder(inputs)
-
-    now = 'sot'
-    dec_input = get_initial_sequence()
-    output: List[str] = []
-    idx = 0
-    while now != 'eot' and idx < max_word_title:
-        dec_output = decoder(dec_input, enc_output, enc_mask)
-
-        idx = len(output)
-        vec = dec_output[0, idx].numpy()
-        now = word2vec.similar_by_vector(vec)[0][0]
-        output.append(now)
-
-        dec_input = tf.concat([
-            tf.reshape(dec_input[0, :(idx + 1)], (1, -1, embedding_dim)),
-            tf.reshape(dec_output[0, idx], (1, -1, embedding_dim)),
-            tf.reshape(dec_input[0, (idx + 2):], (1, -1, embedding_dim))
-        ], axis=1)
-
-    return ' '.join(output)
-
-
-TEST_CONTENT = r'''"The incoming Trump administration could choose to no longer defend the executive branch against the suit, which challenges the administration’s authority to spend billions of dollars on health insurance subsidies for   and   Americans, handing House Republicans a big victory on    issues.
-Collyer ruled that House Republicans had the standing to sue the executive branch over a spending dispute and that the Obama administration had been distributing the health insurance subsidies, in violation of the Constitution, without approval from Congress.
-Anticipating that the Trump administration might not be inclined to mount a vigorous fight against the House Republicans given the  ’s dim view of the health care law, a team of lawyers this month sought to intervene in the case on behalf of two participants in the health care program.
-” No matter what happens, House Republicans say, they want to prevail on two overarching concepts: the congressional power of the purse, and the right of Congress to sue the executive branch if it violates the Constitution regarding that spending power.
-Just as important to House Republicans, Judge Collyer found that Congress had the standing to sue the White House on this issue  —   a ruling that many legal experts said was flawed  —   and they want that precedent to be set to restore congressional leverage over the executive branch.
-But on spending power and standing, the Trump administration may come under pressure from advocates of presidential authority to fight the House no matter their shared views on health care, since those precedents could have broad repercussions."'''
-
-print(TEST_CONTENT)
-print(predict(TEST_CONTENT))
+    print(TEST_CONTENT)
+    print(model.predict(TEST_CONTENT))
