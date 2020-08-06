@@ -73,8 +73,13 @@ def padding(word_list: List[str], max_len: int) -> List[str]:
 
 
 class Word2Vec:
-    def __init__(self, filepath: str = "../../GoogleNews-vectors-negative300.bin"):
-        self.vec = KeyedVectors.load_word2vec_format(filepath, binary=True)
+    def __init__(self, filepath: str = get_filepath("GoogleNews-vectors-negative300.bin")):
+        try:
+            self.vec = KeyedVectors.load_word2vec_format(filepath, binary=True)
+        except FileNotFoundError:
+            print('Vector file not found... please download vector file onto data folder!')
+            print('wget "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"')
+            exit()
         self.size = self.vec.vector_size
 
         self.SOT_VEC = self.vec['sot']
@@ -82,6 +87,7 @@ class Word2Vec:
         self.OOV_VEC = tf.zeros(self.size)
 
         self.vec.add(['eot'], [self.EOT_VEC])
+
 
     def __getitem__(self, item: str):
         return self.vec[item] if item in self.vec else self.OOV_VEC
