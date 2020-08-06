@@ -24,10 +24,15 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # typing
-from typing import List, Tuple, Union, Any
+from typing import List, Tuple, Union, Any, Callable
+
+# nltk
+from nltk import word_tokenize, sent_tokenize
+
+# alive progress
+from alive_progress import alive_bar
 
 # utils
-from nltk import word_tokenize, sent_tokenize
 import pickle
 import os
 import sys
@@ -88,7 +93,6 @@ class Word2Vec:
         self.OOV_VEC = tf.zeros(self.size)
 
         self.vec.add(['eot'], [self.EOT_VEC])
-
 
     def __getitem__(self, item: str):
         return self.vec[item] if item in self.vec else self.OOV_VEC
@@ -364,6 +368,15 @@ class Transformer(Model):
         return ' '.join(output)
 
 
+def assign(func: Callable, array: List[Any], *args, title: str = None) -> Any:
+    result = []
+    with alive_bar(len(array), title=title) as bar:
+        for item in array:
+            result.append(func(item, *args))
+            bar()
+    return result
+
+
 if __name__ == '__main__':
     is_debugging_mode = sys.gettrace()
     if is_debugging_mode:
@@ -401,20 +414,17 @@ if __name__ == '__main__':
         titles, contents = get_data(DATA_SIZE, content='summary')
 
         # Pre-Processing
-        print('Splitting data...')
-        title_split = [split_text(title) for title in titles]
-        content_split = [split_text(content) for content in contents]
+        title_split = assign(split_text, titles, title='[Split title data]')
+        content_split = assign(split_text, contents, title='[Split content data]')
 
         max_word_title = max([len(title) for title in title_split])
         max_word_content = max([len(content) for content in content_split])
 
-        print('Padding data...')
-        title_padded = [padding(title, max_word_title) for title in title_split]
-        content_padded = [padding(content, max_word_content) for content in content_split]
+        title_padded = assign(padding, title_split, max_word_title, title='[Padding title data]')
+        content_padded = assign(padding, content_split, max_word_content, title='[Padding content data]')
 
-        print('Sequencing data...')
-        title_sequences = [word_to_vector(title) for title in title_padded]
-        content_sequences = [word_to_vector(content) for content in content_padded]
+        title_sequences = assign(word_to_vector, title_padded, title='[Sequencing title data]')
+        content_sequences = assign(word_to_vector, content_padded, title='[Sequencing content data]')
 
         X_data = np.array(content_sequences)
         Y_data = np.array(title_sequences)
@@ -426,7 +436,7 @@ if __name__ == '__main__':
 
         X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data)
 
-    print('Model loading...')
+    print('Loading model...')
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
         input_shape=(max_word_content, word2vec.size),
