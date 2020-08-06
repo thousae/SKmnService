@@ -9,6 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Optimizer, Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
 from tensorflow.keras.losses import Loss, MeanSquaredError
+from tensorflow.keras.callbacks import EarlyStopping
 
 # numpy
 import numpy as np
@@ -23,7 +24,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # typing
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 
 # math
 from math import sqrt
@@ -32,6 +33,7 @@ from math import sqrt
 from nltk import word_tokenize, sent_tokenize
 import pickle
 import os
+import sys
 
 
 def get_filepath(filename: str) -> str:
@@ -294,7 +296,8 @@ class Transformer(Model):
                 "name": self.name
             }
 
-    def compile(self, optimizer: Optimizer = None, loss: Loss = None, **kwargs):
+    def compile(self, optimizer: Optimizer = None, loss: Loss = None,
+                **kwargs: Any):
         if optimizer is None:
             learning_rate = Transformer.CustomSchedule(self.embedding_dim)
             optimizer = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
@@ -308,8 +311,8 @@ class Transformer(Model):
         return x_data, y_data[:, :-1], y_data[:, 1:]
 
     def fit(self, x: np.ndarray = None, y: np.ndarray = None,
-            batch_size: int = None, epochs: int = 1, validation_data: Tuple[np.ndarray, np.ndarray] = None,
-            **kwargs):
+            batch_size: int = None, epochs: int = 1,
+            validation_data: Tuple[np.ndarray, np.ndarray] = None, **kwargs):
         x_test, y_test = validation_data
         x_enc_train, x_dec_train, y_train = Transformer.__encoder_decoder_data_split(x, y)
         x_enc_test, x_dec_test, y_test = Transformer.__encoder_decoder_data_split(x_test, y_test)
@@ -355,10 +358,27 @@ class Transformer(Model):
 
 
 if __name__ == '__main__':
-    DATA_SIZE = 5
+    is_debugging_mode = sys.gettrace()
+    if is_debugging_mode:
+        print('========== DEBUGGING MODE ==========')
+        DATA_SIZE = 5
 
-    data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-    # data_filename = 'dummy'
+        NUM_LAYERS = 1
+        NUM_FF_HIDDEN = 512
+        BATCH_SIZE = 1
+        EPOCHS = 20
+
+        data_filename = 'dummy'
+    else:
+        DATA_SIZE = 10000
+
+        NUM_LAYERS = 6
+        NUM_FF_HIDDEN = 1024
+        BATCH_SIZE = 1
+        EPOCHS = 20
+
+        data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+
     try:
         with open(data_filename, 'rb') as f_data:
             print('file found:', data_filename)
@@ -393,12 +413,6 @@ if __name__ == '__main__':
 
         X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data)
 
-    # Training Model
-    NUM_LAYERS = 1
-    NUM_FF_HIDDEN = 512
-    BATCH_SIZE = 1
-    EPOCHS = 10
-
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
         input_shape=(max_word_content, word2vec.size),
@@ -409,11 +423,14 @@ if __name__ == '__main__':
 
     print(model.count_params())
 
+    callback = EarlyStopping(monitor='loss', patience=2)
     history = model.fit(
         X_train, Y_train,
         epochs=EPOCHS, batch_size=BATCH_SIZE,
-        validation_data=(X_test, Y_test)
+        validation_data=(X_test, Y_test),
+        callbacks=[callback]
     )
+
     with open('history.pickle', 'wb') as f_history:
         pickle.dump(history.history, f_history)
     model.save('transformer_model.h5')
