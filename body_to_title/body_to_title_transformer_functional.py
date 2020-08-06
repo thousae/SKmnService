@@ -73,12 +73,13 @@ def padding(word_list: List[str], max_len: int) -> List[str]:
 
 
 class Word2Vec:
-    def __init__(self, filepath: str = get_filepath("GoogleNews-vectors-negative300.bin")):
+    def __init__(self, filepath: str = get_filepath("GoogleNews-vectors-negative300.bin.gz")):
         try:
             self.vec = KeyedVectors.load_word2vec_format(filepath, binary=True)
         except FileNotFoundError:
             print('Vector file not found... please download vector file onto data folder!')
             print('wget "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"')
+            print('filepath: ', filepath)
             exit()
         self.size = self.vec.vector_size
 
@@ -396,18 +397,22 @@ if __name__ == '__main__':
             max_word_content = X_train.shape[1]
     except FileNotFoundError:
         # Import Data
+        print('Importing data...')
         titles, contents = get_data(DATA_SIZE, content='summary')
 
         # Pre-Processing
+        print('Splitting data...')
         title_split = [split_text(title) for title in titles]
         content_split = [split_text(content) for content in contents]
 
         max_word_title = max([len(title) for title in title_split])
         max_word_content = max([len(content) for content in content_split])
 
+        print('Padding data...')
         title_padded = [padding(title, max_word_title) for title in title_split]
         content_padded = [padding(content, max_word_content) for content in content_split]
 
+        print('Sequencing data...')
         title_sequences = [word_to_vector(title) for title in title_padded]
         content_sequences = [word_to_vector(content) for content in content_padded]
 
