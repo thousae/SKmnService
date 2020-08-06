@@ -419,22 +419,26 @@ if __name__ == '__main__':
         X_data = np.array(content_sequences)
         Y_data = np.array(title_sequences)
 
+        print('Saving data...')
         if data_filename != 'dummy':
             with open(data_filename, 'wb') as f:
                 pickle.dump((X_data, Y_data), f)
 
         X_train, X_test, Y_train, Y_test = train_test_split(X_data, Y_data)
 
+    print('Model loading...')
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
         input_shape=(max_word_content, word2vec.size),
         output_shape=(max_word_title, word2vec.size)
     )
 
+    print('Compiling...')
     model.compile()
 
     print(model.count_params())
 
+    print('Fitting...')
     early_stopping = EarlyStopping(monitor='loss', patience=2)
     checkpoint = ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True, verbose=1)
     history = model.fit(
@@ -460,5 +464,6 @@ if __name__ == '__main__':
     Just as important to House Republicans, Judge Collyer found that Congress had the standing to sue the White House on this issue  —   a ruling that many legal experts said was flawed  —   and they want that precedent to be set to restore congressional leverage over the executive branch.
     But on spending power and standing, the Trump administration may come under pressure from advocates of presidential authority to fight the House no matter their shared views on health care, since those precedents could have broad repercussions."'''
 
+    print('Predict data...')
     print(TEST_CONTENT)
     print(model.predict(TEST_CONTENT))
