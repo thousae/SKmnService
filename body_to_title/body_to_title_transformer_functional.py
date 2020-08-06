@@ -9,7 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Optimizer, Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
 from tensorflow.keras.losses import Loss, MeanSquaredError
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # numpy
 import numpy as np
@@ -34,6 +34,7 @@ from nltk import word_tokenize, sent_tokenize
 import pickle
 import os
 import sys
+from datetime import datetime
 
 
 def get_filepath(filename: str) -> str:
@@ -114,8 +115,8 @@ def positional_encoding(input_tensor: tf.Tensor, scale=10000) -> tf.Tensor:
     return input_tensor + pos_encoder
 
 
-def create_padding_mask(input_tensor: tf.Tensor, target: np.ndarray) -> tf.Tensor:
-    return tf.reduce_any(tf.math.not_equal(input_tensor, target), -1)
+def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
+    return tf.reduce_any(tf.math.not_equal(input_tensor, word2vec.EOT_VEC), -1)
 
 
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
@@ -126,7 +127,7 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
     len_value = value.shape[-2]
 
     embedding_dim = query.shape[-1]
-    num_heads = int(sqrt(embedding_dim))
+    num_heads = 12
     while num_heads > 1:
         if embedding_dim % num_heads == 0:
             break
@@ -235,7 +236,7 @@ class Decoder:
 class Transformer(Model):
     def __init__(self, num_layers: int, num_ff_hidden: int,
                  input_shape: Tuple[int, int], output_shape: Tuple[int, int],
-                 batch_size: int = None):
+                 batch_size: int):
         self.num_layers = num_layers
         self.num_ff_hidden = num_ff_hidden
 
@@ -378,6 +379,7 @@ if __name__ == '__main__':
         EPOCHS = 20
 
         data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+    checkpoint_path = 'checkpoint/model_%s_checkpoint.ckpt' % datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
     try:
         with open(data_filename, 'rb') as f_data:
@@ -416,19 +418,21 @@ if __name__ == '__main__':
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
         input_shape=(max_word_content, word2vec.size),
-        output_shape=(max_word_title, word2vec.size)
+        output_shape=(max_word_title, word2vec.size),
+        batch_size=BATCH_SIZE
     )
 
     model.compile()
 
     print(model.count_params())
 
-    callback = EarlyStopping(monitor='loss', patience=2)
+    early_stopping = EarlyStopping(monitor='loss', patience=2)
+    checkpoint = ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True, verbose=1)
     history = model.fit(
         X_train, Y_train,
         epochs=EPOCHS, batch_size=BATCH_SIZE,
         validation_data=(X_test, Y_test),
-        callbacks=[callback]
+        callbacks=[early_stopping, checkpoint]
     )
 
     with open('history.pickle', 'wb') as f_history:
