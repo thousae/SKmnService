@@ -1,0 +1,2 @@
+model_checkpoint_path: "model_2020-08-06-10:54:31_checkpoint.ckpt"
+all_model_checkpoint_paths: "model_2020-08-06-10:54:31_checkpoint.ckpt"

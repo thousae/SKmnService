@@ -3,7 +3,7 @@ import pandas as pd
 
 # tensorflow
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Attention, LayerNormalization, Dense
+from tensorflow.keras.layers import Input, Reshape, Concatenate, Attention, LayerNormalization, Dense
 from tensorflow.keras.activations import relu
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Optimizer, Adam
@@ -25,9 +25,6 @@ import matplotlib.pyplot as plt
 
 # typing
 from typing import List, Tuple, Union, Any
-
-# math
-from math import sqrt
 
 # utils
 from nltk import word_tokenize, sent_tokenize
@@ -121,8 +118,6 @@ def create_padding_mask(input_tensor: tf.Tensor) -> tf.Tensor:
 
 def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
                          query_mask: tf.Tensor = None, value_mask: tf.Tensor = None) -> tf.Tensor:
-    batch_size = query.shape[0]
-
     len_query = query.shape[-2]
     len_value = value.shape[-2]
 
@@ -133,14 +128,20 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
             break
         num_heads -= 1
 
-    query_separated = tf.reshape(query, (batch_size, len_query, num_heads, -1))
-    value_separated = tf.reshape(value, (batch_size, len_value, num_heads, -1))
+    query_separate_layer = Reshape((len_query, num_heads, -1))
+    value_separate_layer = Reshape((len_value, num_heads, -1))
+
+    query_separated = query_separate_layer(query)
+    value_separated = value_separate_layer(value)
 
     output_list: List[tf.Tensor] = []
 
+    query_reshape_layer = Reshape((len_query, -1))
+    value_reshape_layer = Reshape((len_value, -1))
+
     for i in range(num_heads):
-        query_input = tf.reshape(query_separated[:, :, i], (batch_size, len_query, -1))
-        value_input = tf.reshape(value_separated[:, :, i], (batch_size, len_value, -1))
+        query_input = query_reshape_layer(query_separated[:, :, i])
+        value_input = value_reshape_layer(value_separated[:, :, i])
 
         attention_layer = Attention(use_scale=True)
         attention_output = attention_layer(
@@ -149,7 +150,8 @@ def multi_head_attention(query: tf.Tensor, value: tf.Tensor,
         )
         output_list.append(attention_output)
 
-    output = tf.concat(output_list, axis=-1)
+    concat_layer = Concatenate(axis=-1)
+    output = concat_layer(output_list)
     return output
 
 
@@ -235,8 +237,7 @@ class Decoder:
 
 class Transformer(Model):
     def __init__(self, num_layers: int, num_ff_hidden: int,
-                 input_shape: Tuple[int, int], output_shape: Tuple[int, int],
-                 batch_size: int):
+                 input_shape: Tuple[int, int], output_shape: Tuple[int, int]):
         self.num_layers = num_layers
         self.num_ff_hidden = num_ff_hidden
 
@@ -251,13 +252,11 @@ class Transformer(Model):
 
         encoder_input = Input(
             shape=(self.len_input, self.embedding_dim),
-            batch_size=batch_size,
             name='input_layer'
         )
 
         decoder_input = Input(
             shape=(self.len_output - 1, self.embedding_dim),
-            batch_size=batch_size,
             name='output_layer'
         )
 
@@ -327,7 +326,7 @@ class Transformer(Model):
     def __get_initial_sequence(self) -> tf.Tensor:
         text_list = ['sot'] + ['eot'] * (self.len_output - 2)
         text_sequence = word_to_vector(text_list)
-        return tf.constant(text_sequence)
+        return tf.constant([text_sequence])
 
     def predict(self, text: str, *args, **kwargs) -> str:
         text_split = split_text(text)
@@ -346,7 +345,7 @@ class Transformer(Model):
 
             idx = len(output)
             vec = dec_output[0, idx].numpy()
-            now = word2vec.vector_to_word(vec)[0][0]
+            now = word2vec.vector_to_word(vec)
             output.append(now)
 
             dec_input = tf.concat([
@@ -418,8 +417,7 @@ if __name__ == '__main__':
     model = Transformer(
         NUM_LAYERS, NUM_FF_HIDDEN,
         input_shape=(max_word_content, word2vec.size),
-        output_shape=(max_word_title, word2vec.size),
-        batch_size=BATCH_SIZE
+        output_shape=(max_word_title, word2vec.size)
     )
 
     model.compile()
