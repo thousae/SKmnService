@@ -102,6 +102,7 @@ class Word2Vec:
 
 
 if '-l' in sys.argv:
+    print('Loading lite vec...')
     with open(get_filepath('word2vec_lite.pickle'), 'rb') as f:
         word2vec = pickle.load(f)
 else:
