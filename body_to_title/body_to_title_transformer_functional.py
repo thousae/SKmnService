@@ -36,7 +36,6 @@ from alive_progress import alive_bar
 import pickle
 import os
 import sys
-from datetime import datetime
 import copy
 
 
@@ -405,7 +404,7 @@ if __name__ == '__main__':
         EPOCHS = 20
 
         data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-    checkpoint_path = 'checkpoint/model_%s_checkpoint.ckpt' % datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    checkpoint_path = 'checkpoint/model_checkpoint.ckpt'
 
     try:
         with open(data_filename, 'rb') as f_data:
