@@ -37,6 +37,7 @@ import pickle
 import os
 import sys
 from datetime import datetime
+import copy
 
 
 def get_filepath(filename: str) -> str:
@@ -101,7 +102,13 @@ class Word2Vec:
         return self.vec.similar_by_vector(vector)[0][0]
 
 
+print('Loading word2vec...')
 word2vec = Word2Vec()
+lite_vec = copy.copy(word2vec)
+lite_vec.vec = None
+with open(get_filepath('word2vec_lite.pickle'), 'wb') as f:
+    pickle.dump(lite_vec, f)
+print('Lite vector saving done!')
 
 
 def word_to_vector(word_list: List[str]) -> np.ndarray:
