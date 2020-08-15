@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../static/semantic/semantic.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
+    <script src="../static/semantic/semantic.js"></script>
+
+    <style>
+        body {
+            position: relative;
+            width : 63%;
+            left : 19%;
+        }
+
+        h1 {
+           position: relative;
+           top: 20%
+        }
+        input[type="button"] {
+            background-color:lightgray;
+            margin-left: 30px;
+            width: 130px;
+            height: 40px;
+            font-size:15px;
+        }
+    </style>
+</head>
+<body>
+        <h1 style="text-align: center; font-size: 4.5em;">Body to Title</h1>
+        <div class="ui fluid large action input" style="position: relative; top: 25%">
+            <!-- URL 입력 부분 -->
+            <input type="text" id="urlbox" placeholder="Put URL...">
+            <!-- Generate 버튼 -->
+            <div id='script'> <input type="button" onclick="goPython();" value="GENERATE" /></div>
+            <script type="text/javascript">
+                var address = document.getElementById("urlbox").value;
+            function goPython(){
+                $.ajax({
+                    url: "Sumamrizer.py",
+                    context: document.body,
+                    beforeSend: function () {
+                        // Show image container
+                        $("#loader").show();
+                    },
+                    complete: function (data) {
+                        // Hide image container
+                        $("#loader").hide();
+                    }
+                }
+                );
+            }
+            </script>
+            <!-- 요약 할때 로딩 동그라미 돌아가는 거 -->
+
+        </div>
+        <div id='loader' style='display: none; position: relative; top: 33%; left: 48%'>
+                <img src='reload.gif'/>
+        </div>
+</body>
+</html>
+
