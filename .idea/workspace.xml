@@ -19,7 +19,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="" />
+    <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/static/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/static/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/templates/show_result.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/web.py" beforeDir="false" afterPath="$PROJECT_DIR$/web/web.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -189,7 +194,7 @@
       <workItem from="1597129111088" duration="57000" />
       <workItem from="1597374494130" duration="1682000" />
       <workItem from="1597464959861" duration="366000" />
-      <workItem from="1597471358755" duration="23330000" />
+      <workItem from="1597471358755" duration="27930000" />
     </task>
     <servers />
   </component>

@@ -1,4 +1,5 @@
 let frame = null;
+const timeout = 100;
 
 window.onload = () => {
     // This code will be executed when window has been loaded
@@ -30,7 +31,15 @@ function resizeFrame() {
 function showModal(id) {
     $(`.ui.modal`)
         .modal({
-            onApprove   : () => false
+            onApprove   : () => false,
+            onHidden    : () => {
+                frame[0].contentWindow
+                    .postMessage(
+                        '{"event":"command","func":"' + 'stopVideo' + '","args":""}',
+                        '*'
+                    )
+                ;
+            }
         })
         .modal('show')
     ;
@@ -89,14 +98,43 @@ function getUrl() {
     return $('form.ui.form input#url').val();
 }
 
+function getUserID() {
+    return new Promise(resolve => {
+        $.ajax('/get-uid', {
+            type    : 'post',
+            success : data => resolve(data)
+        });
+    });
+}
+
+async function getResult() {
+    const userID = await getUserID();
+    return new Promise(resolve => {
+        const intervalID = setInterval(() => {
+
+        }, timeout);
+    });
+}
+
 function getNextButtonEvent(id, index) {
     switch (index) {
         case 1:
-            return () => {
+            return async () => {
                 const url = getUrl();
                 if (id === 'upload' || isUrl(url)) {
-                    // TODO: Ajax Setting
-                    activeContent(id, index + 1);
+                    const button = $('.positive.button');
+                    button
+                        .addClass('disabled')
+                        .addClass('loading')
+                    ;
+
+                    const result = await getResult();
+
+                    button
+                        .removeClass('disabled')
+                        .removeClass('loading')
+                    ;
+                    activeContent(id, index + 1, result);
                 } else {
                     $('form.ui.form .ui.error.message').show();
                 }
@@ -110,7 +148,7 @@ function getNextButtonEvent(id, index) {
     }
 }
 
-function activeContent(id, step) {
+function activeContent(id, step, result = '') {
     for (let i = 1; i <= 3; i++) {
         const target = getStepByIdAndIndex(id, i);
         const section = getSectionByIdAndIndex(id, i);
@@ -121,6 +159,10 @@ function activeContent(id, step) {
             section.show();
             target.addClass('active');
         }
+    }
+
+    if (result) {
+        $('#result').text(result);
     }
 
     const button = $(`.ui.modal .actions .positive.button`);
