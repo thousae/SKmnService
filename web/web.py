@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 import sys
 
 if '-d' in sys.argv:
@@ -13,9 +13,9 @@ app.config.from_envvar('WEB_SETTINGS', silent=True)
 def show_main():
     return render_template('show_result.html', result=None)
 
-@app.route('/', methods=['POST'])
+@app.route('/get-result', methods=['POST'])
 def show_result():
-    link = request.form['urlbox']
+    link = request.form['url']
     if not link:
         return render_template('show_result.html', result=None)
     result = None

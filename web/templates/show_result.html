@@ -1,63 +1,133 @@
 <!doctype html>
-<html>
-<head>
-    <link rel="stylesheet" type="text/css" href="../static/semantic/semantic.css">
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
-    <script src="../static/semantic/semantic.js"></script>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../static/semantic/semantic.css">
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+                integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+                crossorigin="anonymous"></script>
+        <script src="../static/semantic/semantic.js"></script>
 
-    <style>
-        body {
-            position: relative;
-            width : 63%;
-            left : 19%;
-        }
+        <link rel="stylesheet" href="../static/style.css">
+        <script src="../static/main.js"></script>
 
-        h1 {
-           position: relative;
-           top: 20%
-        }
-        input[type="button"] {
-            background-color:lightgray;
-            margin-left: 30px;
-            width: 130px;
-            height: 40px;
-            font-size:15px;
-        }
-    </style>
-</head>
-<body>
-        <h1 style="text-align: center; font-size: 4.5em;">Body to Title</h1>
-        <div class="ui fluid large action input" style="position: relative; top: 25%">
-            <!-- URL 입력 부분 -->
-            <input type="text" id="urlbox" placeholder="Put URL...">
-            <!-- Generate 버튼 -->
-            <div id='script'> <input type="button" onclick="goPython();" value="GENERATE" /></div>
-            <script type="text/javascript">
-                var address = document.getElementById("urlbox").value;
-            function goPython(){
-                $.ajax({
-                    url: "Sumamrizer.py",
-                    context: document.body,
-                    beforeSend: function () {
-                        // Show image container
-                        $("#loader").show();
-                    },
-                    complete: function (data) {
-                        // Hide image container
-                        $("#loader").hide();
-                    }
-                }
-                );
-            }
-            </script>
-            <!-- 요약 할때 로딩 동그라미 돌아가는 거 -->
-
+        <title>Body to Title</title>
+    </head>
+    <body>
+        <div class="ui container">
+            <header>
+                <h1 class="ui center aligned huge orange header" id="name">Body to Title</h1>
+                <h3 class="ui center aligned header">Just paste video link or select video file</h3>
+            </header>
+            <section>
+                <div class="ui placeholder segment">
+                    <div class="ui two column stackable center aligned grid">
+                        <div class="ui vertical divider">Or</div>
+                        <div class="middle aligned row">
+                            <div class="column">
+                                <div class="ui icon header">
+                                    <i class="search icon"></i>
+                                    Paste Video Link
+                                </div>
+                                <button class="ui big orange button" onclick="showModal('paste')">Next →</button>
+                            </div>
+                            <div class="column">
+                                <div class="ui icon header">
+                                    <i class="world icon"></i>
+                                    Upload Video
+                                </div>
+                                <button class="ui big orange button" onclick="showModal('upload')">Next →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-        <div id='loader' style='display: none; position: relative; top: 33%; left: 48%'>
-                <img src='reload.gif'/>
+        <div class="ui modal">
+            <div class="header" id="paste-header">Paste Video Link</div>
+            <div class="header" id="upload-header">Upload Video</div>
+            <i class="close icon"></i>
+            <div class="center aligned content">
+                <div class="ui fluid steps">
+                    <div class="step" id="paste-step-1">
+                        <i class="home icon"></i>
+                        <div class="content">
+                            <div class="title">Paste Your Link</div>
+                        </div>
+                    </div>
+                    <div class="step" id="upload-step-1">
+                        <i class="home icon"></i>
+                        <div class="content">
+                            <div class="title">Upload Your Video</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-2">
+                        <i class="home icon"></i>
+                        <div class="content">
+                            <div class="title">Generating</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-3">
+                        <i class="home icon"></i>
+                        <div class="content">
+                            <div class="title">Done!</div>
+                        </div>
+                    </div>
+                </div>
+                <section id="paste-section-1">
+                    <form class="ui form">
+                        <div class="ui error message">
+                            <div class="header">Action Forbidden</div>
+                            <p>You can only paste an url.</p>
+                        </div>
+                        <div class="field">
+                            <input type="text" id="url" placeholder="Paste video link here...">
+                        </div>
+                    </form>
+                </section>
+                <section id="upload-section-1">
+                    <form class="ui form">
+                        <div class="ui error message">
+                            <div class="header">Action Forbidden</div>
+                            <p>You can only paste an url.</p>
+                        </div>
+                        <div class="field">
+                            <input type="file" value="Upload">
+                        </div>
+                    </form>
+                </section>
+                <section id="section-2">
+                    <div class="ui segment">
+                        <div class="ui active inverted dimmer">
+                            <div class="ui text loader">Generating</div>
+                        </div>
+                        <div class="ui placeholder">
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe width="100%" allowfullscreen>Your browser doesn't support video streaming.</iframe>
+                    <p id="description">
+                        You can watch your video while generating the title!&nbsp;&nbsp;&nbsp;
+                        <button class="ui tiny green inline button" onclick="showVideo()">Yes</button>
+                        <button class="ui tiny red inline button" onclick="hideDescription()">No</button>
+                    </p>
+                </section>
+            </div>
+            <div class="actions">
+                <div class="ui deny button">
+                    Cancel
+                </div>
+                <div class="ui positive right labeled icon button">
+                    Next
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
         </div>
-</body>
+    </body>
 </html>
 
