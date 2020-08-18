@@ -28,7 +28,7 @@ function resizeFrame() {
     }
 }
 
-function showModal(id) {
+async function showModal(id) {
     $(`.ui.modal`)
         .modal({
             onApprove   : () => false,
@@ -39,12 +39,17 @@ function showModal(id) {
                         '*'
                     )
                 ;
+
+                $('.positive.button')
+                    .removeClass('disabled')
+                    .removeClass('loading')
+                ;
             }
         })
         .modal('show')
     ;
     initContents(id);
-    activeContent(id, 1);
+    await activeContent(id, 1);
 }
 
 function getStepByIdAndIndex(id, index) {
@@ -70,6 +75,9 @@ function initContents(id) {
     $('#description').show();
     $('.ui.modal .ui.segment').show();
     $(`div.header#${id}-header`).show();
+
+    $('#text-loader').hide();
+    $('#text-done').hide();
 
     $('.ui.modal .step').removeClass('active').removeClass('completed').hide();
     $('.ui.modal section').hide();
@@ -107,48 +115,41 @@ function getUserID() {
     });
 }
 
-async function getResult() {
+async function getResult(url) {
     const userID = await getUserID();
     return new Promise(resolve => {
-        const intervalID = setInterval(() => {
-
-        }, timeout);
+        $.ajax('/get-result', {
+            type    : 'post',
+            data    : {
+                'uid'   : userID,
+                'url'   : url
+            },
+            success : data => resolve(data)
+        });
     });
 }
 
-function getNextButtonEvent(id, index) {
+function getNextButtonEvent(id, index, result = '') {
     switch (index) {
         case 1:
             return async () => {
                 const url = getUrl();
                 if (id === 'upload' || isUrl(url)) {
-                    const button = $('.positive.button');
-                    button
-                        .addClass('disabled')
-                        .addClass('loading')
-                    ;
-
-                    const result = await getResult();
-
-                    button
-                        .removeClass('disabled')
-                        .removeClass('loading')
-                    ;
-                    activeContent(id, index + 1, result);
+                    await activeContent(id, index + 1);
                 } else {
                     $('form.ui.form .ui.error.message').show();
                 }
             };
 
         case 2:
-            return () => activeContent(id, index + 1);
+            return () => activeContent(id, index + 1, result);
 
         case 3:
             return () => $('.ui.modal').modal('toggle');
     }
 }
 
-function activeContent(id, step, result = '') {
+async function activeContent(id, step) {
     for (let i = 1; i <= 3; i++) {
         const target = getStepByIdAndIndex(id, i);
         const section = getSectionByIdAndIndex(id, i);
@@ -161,13 +162,34 @@ function activeContent(id, step, result = '') {
         }
     }
 
-    if (result) {
-        $('#result').text(result);
-    }
-
     const button = $(`.ui.modal .actions .positive.button`);
     button.unbind();
-    button.click(getNextButtonEvent(id, step));
+
+    if (step === 2) {
+        const loader = $('#text-loader');
+        const done = $('#text-done');
+
+        button
+            .addClass('disabled')
+            .addClass('loading')
+        ;
+        loader.show();
+
+        const result = await getResult(getUrl());
+
+        button
+            .removeClass('disabled')
+            .removeClass('loading')
+        ;
+        button.click(getNextButtonEvent(id, step, result));
+
+        loader.hide();
+        done.show();
+
+        $('#result').text(result);
+    } else {
+        button.click(getNextButtonEvent(id, step));
+    }
 }
 
 function showVideo() {

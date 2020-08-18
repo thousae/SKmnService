@@ -10,12 +10,12 @@
         <link rel="stylesheet" href="../static/style.css">
         <script src="../static/main.js"></script>
 
-        <title>Body to Title</title>
+        <title>Summarizer</title>
     </head>
     <body>
         <div class="ui container">
             <header>
-                <h1 class="ui center aligned huge orange header" id="name">Body to Title</h1>
+                <h1 class="ui center aligned huge blue header" id="name">Body to Title</h1>
                 <h3 class="ui center aligned header">Just paste video link or select video file</h3>
             </header>
             <section>
@@ -28,14 +28,14 @@
                                     <i class="search icon"></i>
                                     Paste Video Link
                                 </div>
-                                <button class="ui big orange button" onclick="showModal('paste')">Next →</button>
+                                <button class="ui big primary button" onclick="showModal('paste')">Next</button>
                             </div>
                             <div class="column">
                                 <div class="ui icon header">
-                                    <i class="world icon"></i>
+                                    <i class="upload icon"></i>
                                     Upload Video
                                 </div>
-                                <button class="ui big orange button" onclick="showModal('upload')">Next →</button>
+                                <button class="ui big primary button" onclick="showModal('upload')">Next</button>
                             </div>
                         </div>
                     </div>
@@ -49,25 +49,25 @@
             <div class="center aligned content">
                 <div class="ui fluid steps">
                     <div class="step" id="paste-step-1">
-                        <i class="home icon"></i>
+                        <i class="paste icon"></i>
                         <div class="content">
                             <div class="title">Paste Your Link</div>
                         </div>
                     </div>
                     <div class="step" id="upload-step-1">
-                        <i class="home icon"></i>
+                        <i class="upload icon"></i>
                         <div class="content">
                             <div class="title">Upload Your Video</div>
                         </div>
                     </div>
                     <div class="step" id="step-2">
-                        <i class="home icon"></i>
+                        <i class="sync alternate icon"></i>
                         <div class="content">
                             <div class="title">Generating</div>
                         </div>
                     </div>
                     <div class="step" id="step-3">
-                        <i class="home icon"></i>
+                        <i class="check square outline icon"></i>
                         <div class="content">
                             <div class="title">Done!</div>
                         </div>
@@ -98,7 +98,11 @@
                 <section id="section-2">
                     <div class="ui segment">
                         <div class="ui active inverted dimmer">
-                            <div class="ui text loader">Generating</div>
+                            <div class="ui text loader" id="text-loader">Generating</div>
+                            <div id="text-done">
+                                <i class="green checkmark icon"></i>
+                                Done!
+                            </div>
                         </div>
                         <div class="ui placeholder">
                             <div class="paragraph">
@@ -116,6 +120,12 @@
                         <button class="ui tiny green inline button" onclick="showVideo()">Yes</button>
                         <button class="ui tiny red inline button" onclick="hideDescription()">No</button>
                     </p>
+                </section>
+                <section id="section-3">
+                    <h3 class="ui blue header">This is your summary</h3>
+                    <div class="ui segment">
+                        <p id="result"></p>
+                    </div>
                 </section>
             </div>
             <div class="actions">

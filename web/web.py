@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, jsonify
+from flask import Flask, render_template, request, session
 import sys
 import uuid
 
@@ -11,17 +11,18 @@ app = Flask(__name__)
 app.config.from_envvar('WEB_SETTINGS', silent=True)
 app.secret_key = uuid.uuid4().hex
 
+results = []
+
 @app.route('/')
 def show_main():
     return render_template('index.html', result=None)
 
 @app.route('/get-result', methods=['POST'])
 def show_result():
-    link = request.form['url']
-    if not link:
-        return render_template('index.html', result=None)
-    result = None
-    return render_template('index.html', result=result)
+    user_id = request.form['uid']
+    url = request.form['url']
+    result = 'result'
+    return result
 
 @app.route('/get-uid', methods=['POST'])
 def get_uid():

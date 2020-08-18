@@ -17,9 +17,12 @@ def file_to_mp3(title):
     subprocess.run(command)
 
 
+def make_mp3(arg: str, link: str):
+    if arg == 'link':
+        link_to_mp3(link)
+    elif arg == 'file':
+        file_to_mp3(link)
+
+
 if __name__ == "__main__":
-    if(sys.argv[1] == 'link'):
-        link_to_mp3(sys.argv[2])
-    elif(sys.argv[1] == 'file'):
-        title = ' '.join(sys.argv[2:])
-        file_to_mp3(title)
+    make_mp3(sys.argv[1], sys.argv[2])
