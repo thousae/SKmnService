@@ -19,16 +19,9 @@ def show_main():
 
 @app.route('/get-result', methods=['POST'])
 def show_result():
-    user_id = request.form['uid']
     url = request.form['url']
     result = 'result'
     return result
-
-@app.route('/get-uid', methods=['POST'])
-def get_uid():
-    if 'uid' not in session:
-        session['uid'] = uuid.uuid4().hex
-    return session['uid']
 
 if __name__ == '__main__':
     app.run()

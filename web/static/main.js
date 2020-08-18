@@ -106,22 +106,11 @@ function getUrl() {
     return $('form.ui.form input#url').val();
 }
 
-function getUserID() {
-    return new Promise(resolve => {
-        $.ajax('/get-uid', {
-            type    : 'post',
-            success : data => resolve(data)
-        });
-    });
-}
-
 async function getResult(url) {
-    const userID = await getUserID();
     return new Promise(resolve => {
         $.ajax('/get-result', {
             type    : 'post',
             data    : {
-                'uid'   : userID,
                 'url'   : url
             },
             success : data => resolve(data)
@@ -129,7 +118,7 @@ async function getResult(url) {
     });
 }
 
-function getNextButtonEvent(id, index, result = '') {
+function getNextButtonEvent(id, index) {
     switch (index) {
         case 1:
             return async () => {
@@ -142,7 +131,7 @@ function getNextButtonEvent(id, index, result = '') {
             };
 
         case 2:
-            return () => activeContent(id, index + 1, result);
+            return () => activeContent(id, index + 1);
 
         case 3:
             return () => $('.ui.modal').modal('toggle');
