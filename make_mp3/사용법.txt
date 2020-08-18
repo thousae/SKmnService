@@ -1,0 +1,22 @@
+아래 주소 참고함
+youtube-dl: https://github.com/ytdl-org/youtube-dl
+ffmpeg: https://www.johnvansickle.com/ffmpeg/faq/
+
+
+youtube-dl 설치
+$ curl -L https://yt-dl.org/downloads/latest/youtube-dl -o ./.local/bin/youtube-dl
+$ chmod a+rx ./.local/bin/youtube-dl
+ 
+
+ffmpeg 설치
+$ wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
+$ wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz.md5
+$ tar xvf ffmpeg-git-amd64-static.tar.xz
+$ mv ffmpeg-git-20200803-amd64-static/ffmpeg ffmpeg-git-20200803-amd64-static/ffprobe ./.local/bin/
+
+
+사용법
+유튜브 링크: python make_mp3.py link (주소)
+파일: python make_mp3.py file (파일 이름)
+
+이렇게 하면 result 폴더에 mp3 파일 저장됨
