@@ -366,8 +366,7 @@ def SKMN(input1, sentcount):
     que = PriorityQueue()
     for i in range(mixlen):
         que.put((rcountlist[i], Mixlist[i]))
-    for i in range(sentcount):
-        print(que.get()[1])
+    return '\n'.join([que.get()[1] for _ in range(sentcount)])
 
 if __name__ == '__main__':
-    SKMN(input1, sentn)
+    print(SKMN(input1, sentn))

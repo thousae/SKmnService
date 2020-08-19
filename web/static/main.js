@@ -11,10 +11,6 @@ window.onload = () => {
         })
     ;
 
-    $('section#section-2 .ui.segment')
-        .popup()
-    ;
-
     frame = $('iframe');
 }
 
@@ -73,7 +69,7 @@ function initContents(id) {
     $('form.ui.form .ui.error.message').hide();
     $('iframe').hide();
     $('#description').show();
-    $('.ui.modal .ui.segment').show();
+    $('.ui.modal .ui.segment#video-segment').show();
     $(`div.header#${id}-header`).show();
 
     $('#text-loader').hide();
@@ -111,7 +107,8 @@ async function getResult(url) {
         $.ajax('/get-result', {
             type    : 'post',
             data    : {
-                'url'   : url
+                'method' : 'link',
+                'url'    : url
             },
             success : data => resolve(data)
         });
@@ -191,7 +188,7 @@ function showVideo() {
     ;
     resizeFrame();
 
-    $('.ui.modal .ui.segment').hide();
+    $('.ui.modal .ui.segment#video-segment').hide();
     hideDescription();
 }
 
