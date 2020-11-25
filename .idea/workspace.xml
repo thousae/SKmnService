@@ -20,9 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="30c9697e-33ce-4bd0-9581-e470bcedc11c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/SKmnService.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SKmnService.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" beforeDir="false" afterPath="$PROJECT_DIR$/body_to_title/body_to_title_transformer_functional.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -187,7 +184,7 @@
       <workItem from="1596530920477" duration="832000" />
       <workItem from="1606195641417" duration="751000" />
       <workItem from="1606227149397" duration="501000" />
-      <workItem from="1606306000889" duration="744000" />
+      <workItem from="1606306000889" duration="923000" />
     </task>
     <servers />
   </component>

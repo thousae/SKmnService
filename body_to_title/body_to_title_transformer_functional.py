@@ -90,45 +90,6 @@ def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
 
 DATA_SIZE = 100000
 
-data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-# data_filename = 'dummy'
-try:
-    with open(data_filename, 'rb') as f_data:
-        print('file found:', data_filename)
-
-        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
-            = encoder_decoder_data_split(*pickle.load(f_data))
-
-        max_word_title = Y_train.shape[1] + 1
-        max_word_content = X_enc_test.shape[1]
-except FileNotFoundError:
-    # Import Data
-    titles, contents = get_data(DATA_SIZE, content='summary')
-
-    # Pre-Processing
-    title_split = [split_text(title) for title in titles]
-    content_split = [split_text(content) for content in contents]
-
-    max_word_title = max([len(title) for title in title_split])
-    max_word_content = max([len(content) for content in content_split])
-
-    title_padded = [padding(title, max_word_title) for title in title_split]
-    content_padded = [padding(content, max_word_content) for content in content_split]
-
-    title_sequences = [word_to_vector(title) for title in title_padded]
-    content_sequences = [word_to_vector(content) for content in content_padded]
-
-    X_data = np.array(content_sequences)
-    Y_data = np.array(title_sequences)
-
-    if data_filename != 'dummy':
-        with open(data_filename, 'wb') as f:
-            pickle.dump((X_data, Y_data), f)
-
-    X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
-        = encoder_decoder_data_split(X_data, Y_data)
-
-
 # Training Model
 NUM_HEADS = 10
 NUM_LAYERS = 6
@@ -314,6 +275,49 @@ def predict(text: str) -> str:
 
 
 if __name__ == '__main__':
+    data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+    # data_filename = 'dummy'
+    try:
+        with open(data_filename, 'rb') as f_data:
+            print('file found:', data_filename)
+
+            X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
+                = encoder_decoder_data_split(*pickle.load(f_data))
+
+            max_word_title = Y_train.shape[1] + 1
+            max_word_content = X_enc_test.shape[1]
+    except FileNotFoundError:
+        # Import Data
+        titles, contents = get_data(DATA_SIZE, content='summary')
+
+        # Pre-Processing
+        title_split = [split_text(title) for title in titles]
+        content_split = [split_text(content) for content in contents]
+
+        max_word_title = max([len(title) for title in title_split])
+        max_word_content = max([len(content) for content in content_split])
+
+        title_padded = [padding(title, max_word_title) for title in title_split]
+        content_padded = [padding(content, max_word_content) for content in content_split]
+
+        title_sequences = [word_to_vector(title) for title in title_padded]
+        content_sequences = [word_to_vector(content) for content in content_padded]
+
+        X_data = np.array(content_sequences)
+        Y_data = np.array(title_sequences)
+
+        if data_filename != 'dummy':
+            with open(data_filename, 'wb') as f:
+                pickle.dump((X_data, Y_data), f)
+
+        X_enc_train, X_enc_test, X_dec_train, X_dec_test, Y_train, Y_test \
+            = encoder_decoder_data_split(X_data, Y_data)
+
+    print('============== DATA INFO ==============')
+    print('max_word_title: ', max_word_title)
+    print('max_word_content: ', max_word_content)
+    print('=======================================')
+
     losses = [
         (keras_losses.MeanSquaredError(), 'MeanSquaredError'),
         (keras_losses.MeanSquaredLogarithmicError(), 'MeanSquaredLogarithmicError'),
