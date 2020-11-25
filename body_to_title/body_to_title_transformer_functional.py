@@ -8,7 +8,7 @@ from tensorflow.keras.activations import relu
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
-from tensorflow.keras.losses import MeanSquaredError
+import tensorflow.keras.losses as keras_losses
 
 # numpy
 import numpy as np
@@ -88,10 +88,10 @@ def encoder_decoder_data_split(x_data: np.ndarray, y_data: np.ndarray) \
     return x_train, x_test, y_train[:, :-1], y_test[:, :-1], y_train[:, 1:], y_test[:, 1:]
 
 
-DATA_SIZE = 5
+DATA_SIZE = 100000
 
-# data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
-data_filename = 'dummy'
+data_filename = get_filepath('learning_data_%d.pickle' % DATA_SIZE)
+# data_filename = 'dummy'
 try:
     with open(data_filename, 'rb') as f_data:
         print('file found:', data_filename)
@@ -262,27 +262,6 @@ def transformer(enc_input: tf.Tensor, dec_input: tf.Tensor) -> tf.Tensor:
     return output
 
 
-encoder_input = Input(
-    shape=(max_word_content, embedding_dim),
-    batch_size=BATCH_SIZE,
-    name='input_layer'
-)
-
-decoder_input = Input(
-    shape=(max_word_title - 1, embedding_dim),
-    batch_size=BATCH_SIZE,
-    name='output_layer'
-)
-
-transformer_training_output = transformer(encoder_input, decoder_input)
-
-model = Model(
-    inputs=[encoder_input, decoder_input],
-    outputs=transformer_training_output,
-    name='transformer_functional_model'
-)
-
-
 class CustomSchedule(LearningRateSchedule):
     def __init__(self, d_model, warm_up_steps=4000):
         super(CustomSchedule, self).__init__()
@@ -302,29 +281,6 @@ class CustomSchedule(LearningRateSchedule):
             "warm_up_steps": self.warm_up_steps,
             "name": 'transformer_custom_schedule'
         }
-
-
-learning_rate = CustomSchedule(embedding_dim)
-model.compile(
-    optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-    loss=MeanSquaredError()
-)
-
-model.count_params()
-
-history = model.fit(
-    [X_enc_train, X_dec_train], Y_train,
-    epochs=EPOCHS, batch_size=BATCH_SIZE,
-    validation_data=([X_enc_test, X_dec_test], Y_test),
-)
-with open('history.pickle', 'wb') as f_history:
-    pickle.dump(history.history, f_history)
-model.save('transformer_model.h5')
-
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='test')
-plt.legend()
-plt.show()
 
 
 def get_initial_sequence() -> tf.Tensor:
@@ -357,5 +313,66 @@ def predict(text: str) -> str:
     return ' '.join(output)
 
 
-print(contents[0])
-print(predict(contents[0]))
+if __name__ == '__main__':
+    losses = [
+        (keras_losses.MeanSquaredError(), 'MeanSquaredError'),
+        (keras_losses.MeanSquaredLogarithmicError(), 'MeanSquaredLogarithmicError'),
+        (keras_losses.BinaryCrossentropy(), 'BinaryCrossEntropy'),
+        (keras_losses.CategoricalCrossentropy(), 'CategoricalCrossEntropy'),
+        (keras_losses.Hinge(), 'Hinge'),
+        (keras_losses.SquaredHinge(), 'SquaredHinge'),
+        (keras_losses.CategoricalHinge(), 'CategoricalHinge'),
+        (keras_losses.Poisson(), 'Poisson'),
+        (keras_losses.CosineSimilarity, 'CosineSimilarity'),
+        (keras_losses.Huber(), 'Huber'),
+        (keras_losses.KLDivergence(), 'KLDivergence'),
+        (keras_losses.LogCosh(), 'LogCosh'),
+    ]
+
+    for loss_function, loss_name in losses:
+        print('\n *** %s ***\n' % loss_name)
+
+        encoder_input = Input(
+            shape=(max_word_content, embedding_dim),
+            batch_size=BATCH_SIZE,
+            name='input_layer'
+        )
+
+        decoder_input = Input(
+            shape=(max_word_title - 1, embedding_dim),
+            batch_size=BATCH_SIZE,
+            name='output_layer'
+        )
+
+        transformer_training_output = transformer(encoder_input, decoder_input)
+
+        model = Model(
+            inputs=[encoder_input, decoder_input],
+            outputs=transformer_training_output,
+            name='transformer_functional_model'
+        )
+
+        learning_rate = CustomSchedule(embedding_dim)
+        model.compile(
+            optimizer=Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+            loss=loss_function
+        )
+
+        model.count_params()
+
+        history = model.fit(
+            [X_enc_train, X_dec_train], Y_train,
+            epochs=EPOCHS, batch_size=BATCH_SIZE,
+            validation_data=([X_enc_test, X_dec_test], Y_test),
+        )
+        with open('history.pickle', 'wb') as f_history:
+            pickle.dump(history.history, f_history)
+        model.save('transformer_model_%s.h5' % loss_name)
+
+        plt.plot(history.history['loss'], label='train')
+        plt.plot(history.history['val_loss'], label='test')
+        plt.legend()
+        plt.show()
+
+        print(contents[0])
+        print(predict(contents[0]))
