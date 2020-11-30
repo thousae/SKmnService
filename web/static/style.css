@@ -1,0 +1,15 @@
+header {
+    margin: 140px 0 100px 0;
+}
+
+header h1#name {
+    font-size: 50px;
+}
+
+.ui.fluid.input {
+    width: 100% !important;
+}
+
+video {
+    display: none;
+}
