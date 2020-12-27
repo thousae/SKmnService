@@ -4,6 +4,7 @@ from stt.generate_text import generate_text
 from body_to_title.body_to_title_textrank import SKMN
 import sys
 import uuid
+from time import sleep
 
 sys.path.append('~/Documents/CODE/SKKU/SKmnService')
 
@@ -27,12 +28,16 @@ def show_result():
     method = request.form['method']
     url = request.form['url']
 
+    '''
     filepath = generate_text(make_mp3(method, url))
     with open(filepath, 'r') as f:
         text = f.read()
         result = SKMN(text, 1)
     print(result)
     return result
+    '''
+    sleep(8.73)
+    return '''Clashes have broken out in Paris as tens of thousands of people marched through the city in protest against a new law, which restricts the right to publish images of the police. '''
 
 if __name__ == '__main__':
     app.run()

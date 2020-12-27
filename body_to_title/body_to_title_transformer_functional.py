@@ -40,6 +40,11 @@ import copy
 
 
 def get_filepath(filename: str) -> str:
+    """
+    Get filepath of data. Or return the path of the data file on the data folder if the data folder exists.
+    :param filename: The data csv file name.
+    :return: The filepath of data csv file.
+    """
     filepath = 'data/' + filename
     if os.getcwd().split('/')[-1] == 'body_to_title':
         filepath = '../' + filepath
@@ -47,6 +52,13 @@ def get_filepath(filename: str) -> str:
 
 
 def get_data(data_size: int = None, title='title', content='content'):
+    """
+    Get the data as a pandas dataframe.
+    :param data_size: Max # of the data.
+    :param title: The name of title column. It depends on the csv file.
+    :param content: The name of content column. It depends on the csv file.
+    :return: The data as a pandas dataframe.
+    """
     csv_filename = get_filepath('articles.csv')
 
     with open(csv_filename) as f_csv:
@@ -66,6 +78,11 @@ def get_data(data_size: int = None, title='title', content='content'):
 
 
 def split_text(text: str) -> List[str]:
+    """
+    Split the text to the list of words.
+    :param text: The text to split.
+    :return: The list of words.
+    """
     sentences = sent_tokenize(text)
     if len(sentences) <= 1:
         return word_tokenize(sentences[0])
@@ -74,6 +91,15 @@ def split_text(text: str) -> List[str]:
 
 
 def padding(word_list: List[str], max_len: int) -> List[str]:
+    """
+    Pad the list of words.
+    For example, if it gets the list of words, [ 'I', 'am', 'a', 'student', '.' ],
+    and the value of max_len is 10, its result will be
+    [ 'I', 'am', 'a', 'student', '.', 'eot', 'eot', 'eot', 'eot', 'eot' ]
+    :param word_list: The list of words to pad.
+    :param max_len: The maximum length of the result. The length of result list will be max_len.
+    :return: The padded list of words.
+    """
     return word_list + ['eot'] * (max_len - len(word_list))
 
 
@@ -380,6 +406,14 @@ class Transformer(Model):
 
 
 def assign(func: Callable, array: List[Any], *args, title: str = None) -> Any:
+    """
+    Return the list of the results of the func run with the each item of array and args as a parameter.
+    :param func: The function to run.
+    :param array: The array that will be passed as a parameter of the func.
+    :param args: The arguments that will be passed as a parameter of the func additionally.
+    :param title: The title of the alive progress bar.
+    :return: The list of the results of the func execution.
+    """
     result = []
     with alive_bar(len(array), title=title) as bar:
         for item in array:
